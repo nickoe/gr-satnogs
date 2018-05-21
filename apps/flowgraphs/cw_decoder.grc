@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<?grc format='1' created='3.7.11'?>
+<?grc format='1' created='3.7.12'?>
 <flow_graph>
   <timestamp>Thu May  5 00:22:45 2016</timestamp>
   <block>
@@ -73,12 +73,20 @@
       <value>True</value>
     </param>
     <param>
+      <key>sizing_mode</key>
+      <value>fixed</value>
+    </param>
+    <param>
       <key>thread_safe_setters</key>
       <value></value>
     </param>
     <param>
       <key>title</key>
       <value>CW Decoder</value>
+    </param>
+    <param>
+      <key>placement</key>
+      <value>(0,0)</value>
     </param>
   </block>
   <block>
@@ -106,33 +114,6 @@
     <param>
       <key>value</key>
       <value>48000</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(574, 546)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>lpf_decimation</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>5</value>
     </param>
   </block>
   <block>
@@ -281,6 +262,65 @@ TX sampling rate</value>
     </param>
   </block>
   <block>
+    <key>analog_agc_xx</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1372, 339)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>gain</key>
+      <value>1.0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>analog_agc_xx_0</value>
+    </param>
+    <param>
+      <key>max_gain</key>
+      <value>65536</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>rate</key>
+      <value>1e-4</value>
+    </param>
+    <param>
+      <key>reference</key>
+      <value>1.0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>float</value>
+    </param>
+  </block>
+  <block>
     <key>analog_pll_carriertracking_cc</key>
     <param>
       <key>alias</key>
@@ -316,7 +356,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>max_freq</key>
-      <value>2*math.pi*2e3/(samp_rate_rx/xlating_decimation/lpf_decimation)</value>
+      <value>2*math.pi*2e3/audio_samp_rate</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -324,7 +364,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>min_freq</key>
-      <value>-2*math.pi*2e3/(samp_rate_rx/xlating_decimation/lpf_decimation)</value>
+      <value>-2*math.pi*2e3/audio_samp_rate</value>
     </param>
     <param>
       <key>minoutbuf</key>
@@ -429,6 +469,10 @@ TX sampling rate</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>string</value>
     </param>
@@ -470,6 +514,10 @@ TX sampling rate</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -515,6 +563,10 @@ tone. This tone is typically 1 kHz.</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -612,61 +664,6 @@ tone. This tone is typically 1 kHz.</value>
     </param>
   </block>
   <block>
-    <key>blocks_moving_average_xx</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1400, 348)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>blocks_moving_average_xx_0</value>
-    </param>
-    <param>
-      <key>length</key>
-      <value>300</value>
-    </param>
-    <param>
-      <key>max_iter</key>
-      <value>4000</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>scale</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>float</value>
-    </param>
-  </block>
-  <block>
     <key>blocks_multiply_xx</key>
     <param>
       <key>alias</key>
@@ -752,6 +749,10 @@ tone. This tone is typically 1 kHz.</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>string</value>
     </param>
@@ -793,6 +794,10 @@ tone. This tone is typically 1 kHz.</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -838,6 +843,10 @@ tone. This tone is typically 1 kHz.</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>intx</value>
     </param>
@@ -879,6 +888,10 @@ tone. This tone is typically 1 kHz.</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -924,6 +937,10 @@ tone. This tone is typically 1 kHz.</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>string</value>
     </param>
@@ -960,7 +977,7 @@ tone. This tone is typically 1 kHz.</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(520, 188)</value>
+      <value>(287, 379)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1024,6 +1041,10 @@ tone. This tone is typically 1 kHz.</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -1131,6 +1152,10 @@ tone. This tone is typically 1 kHz.</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>string</value>
     </param>
@@ -1175,6 +1200,10 @@ we shift the LO a little further</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>eng_float</value>
     </param>
@@ -1195,7 +1224,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>comment</key>
-      <value>Output samplerate: 100k / 5 = 20k</value>
+      <value></value>
     </param>
     <param>
       <key>affinity</key>
@@ -1207,7 +1236,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>decim</key>
-      <value>lpf_decimation</value>
+      <value>1</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -1219,7 +1248,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(768, 284)</value>
+      <value>(1268, 179)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1227,7 +1256,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>gain</key>
-      <value>lpf_decimation</value>
+      <value>1</value>
     </param>
     <param>
       <key>id</key>
@@ -1247,7 +1276,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>samp_rate</key>
-      <value>samp_rate_rx/xlating_decimation</value>
+      <value>audio_samp_rate</value>
     </param>
     <param>
       <key>width</key>
@@ -1322,7 +1351,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>samp_rate</key>
-      <value>samp_rate_rx/xlating_decimation/lpf_decimation</value>
+      <value>audio_samp_rate</value>
     </param>
     <param>
       <key>width</key>
@@ -2741,6 +2770,69 @@ we shift the LO a little further</value>
     </param>
   </block>
   <block>
+    <key>pfb_arb_resampler_xxx</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(662, 227)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>pfb_arb_resampler_xxx_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>nfilts</key>
+      <value>32</value>
+    </param>
+    <param>
+      <key>rrate</key>
+      <value>(audio_samp_rate) / (samp_rate_rx / xlating_decimation)</value>
+    </param>
+    <param>
+      <key>samp_delay</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>atten</key>
+      <value>80</value>
+    </param>
+    <param>
+      <key>taps</key>
+      <value></value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>ccf</value>
+    </param>
+  </block>
+  <block>
     <key>parameter</key>
     <param>
       <key>alias</key>
@@ -2775,130 +2867,16 @@ we shift the LO a little further</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>intx</value>
     </param>
     <param>
       <key>value</key>
       <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>rational_resampler_xxx</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value>Output samplerate: 48k</value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>decim</key>
-      <value>int((samp_rate_rx/xlating_decimation))</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>fbw</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(864, 76)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>rational_resampler_xxx_0</value>
-    </param>
-    <param>
-      <key>interp</key>
-      <value>audio_samp_rate</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>taps</key>
-      <value></value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>ccc</value>
-    </param>
-  </block>
-  <block>
-    <key>rational_resampler_xxx</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value>Output samplerate: 48k</value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>decim</key>
-      <value>int((samp_rate_rx/xlating_decimation)/lpf_decimation)</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>fbw</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1088, 580)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>180</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>rational_resampler_xxx_0_0</value>
-    </param>
-    <param>
-      <key>interp</key>
-      <value>audio_samp_rate</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>taps</key>
-      <value></value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>ccc</value>
     </param>
   </block>
   <block>
@@ -2934,6 +2912,10 @@ we shift the LO a little further</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -2979,6 +2961,10 @@ we shift the LO a little further</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>intx</value>
     </param>
@@ -3020,6 +3006,10 @@ we shift the LO a little further</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -3065,6 +3055,10 @@ we shift the LO a little further</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>string</value>
     </param>
@@ -3093,7 +3087,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(280, 304)</value>
+      <value>(446, 239)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3113,7 +3107,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>sampling_rate</key>
-      <value>samp_rate_rx</value>
+      <value>samp_rate_rx / xlating_decimation</value>
     </param>
     <param>
       <key>target_freq</key>
@@ -3124,7 +3118,7 @@ we shift the LO a little further</value>
     <key>satnogs_cw_to_symbol</key>
     <param>
       <key>threshold</key>
-      <value>0.75</value>
+      <value>0.8</value>
     </param>
     <param>
       <key>alias</key>
@@ -3168,62 +3162,11 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>sampling_rate</key>
-      <value>samp_rate_rx/xlating_decimation/lpf_decimation/4</value>
+      <value>audio_samp_rate/4</value>
     </param>
     <param>
       <key>wpm</key>
       <value>wpm</value>
-    </param>
-  </block>
-  <block>
-    <key>satnogs_doppler_correction_cc</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>corrections_per_sec</key>
-      <value>1000</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(288, 192)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>satnogs_doppler_correction_cc_0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>sampling_rate</key>
-      <value>samp_rate_rx</value>
-    </param>
-    <param>
-      <key>target_freq</key>
-      <value>rx_freq</value>
     </param>
   </block>
   <block>
@@ -3594,6 +3537,10 @@ we shift the LO a little further</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>string</value>
     </param>
@@ -3635,6 +3582,10 @@ we shift the LO a little further</value>
     <param>
       <key>short_id</key>
       <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
     </param>
     <param>
       <key>type</key>
@@ -3680,6 +3631,10 @@ we shift the LO a little further</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>string</value>
     </param>
@@ -3723,6 +3678,10 @@ we shift the LO a little further</value>
       <value></value>
     </param>
     <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
       <key>type</key>
       <value>intx</value>
     </param>
@@ -3738,6 +3697,12 @@ we shift the LO a little further</value>
     <sink_key>1</sink_key>
   </connection>
   <connection>
+    <source_block_id>analog_agc_xx_0</source_block_id>
+    <sink_block_id>low_pass_filter_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
     <source_block_id>analog_pll_carriertracking_cc_0</source_block_id>
     <sink_block_id>blocks_complex_to_mag_squared_0</sink_block_id>
     <source_key>0</source_key>
@@ -3751,7 +3716,7 @@ we shift the LO a little further</value>
   </connection>
   <connection>
     <source_block_id>blocks_complex_to_mag_squared_0</source_block_id>
-    <sink_block_id>blocks_moving_average_xx_0</sink_block_id>
+    <sink_block_id>analog_agc_xx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -3762,26 +3727,14 @@ we shift the LO a little further</value>
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>blocks_moving_average_xx_0</source_block_id>
-    <sink_block_id>low_pass_filter_0_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
     <source_block_id>blocks_multiply_xx_0</source_block_id>
-    <sink_block_id>rational_resampler_xxx_0_0</sink_block_id>
+    <sink_block_id>blocks_complex_to_real_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>freq_xlating_fir_filter_xxx_0</source_block_id>
-    <sink_block_id>low_pass_filter_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>freq_xlating_fir_filter_xxx_0</source_block_id>
-    <sink_block_id>rational_resampler_xxx_0</sink_block_id>
+    <sink_block_id>satnogs_coarse_doppler_correction_cc_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -3805,31 +3758,31 @@ we shift the LO a little further</value>
   </connection>
   <connection>
     <source_block_id>osmosdr_source_0</source_block_id>
-    <sink_block_id>satnogs_coarse_doppler_correction_cc_0</sink_block_id>
+    <sink_block_id>freq_xlating_fir_filter_xxx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>rational_resampler_xxx_0</source_block_id>
+    <source_block_id>pfb_arb_resampler_xxx_0</source_block_id>
+    <sink_block_id>low_pass_filter_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>pfb_arb_resampler_xxx_0</source_block_id>
     <sink_block_id>satnogs_iq_sink_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>rational_resampler_xxx_0</source_block_id>
+    <source_block_id>pfb_arb_resampler_xxx_0</source_block_id>
     <sink_block_id>satnogs_waterfall_sink_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>rational_resampler_xxx_0_0</source_block_id>
-    <sink_block_id>blocks_complex_to_real_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
     <source_block_id>satnogs_coarse_doppler_correction_cc_0</source_block_id>
-    <sink_block_id>freq_xlating_fir_filter_xxx_0</sink_block_id>
+    <sink_block_id>pfb_arb_resampler_xxx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -3838,12 +3791,6 @@ we shift the LO a little further</value>
     <sink_block_id>satnogs_morse_decoder_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>satnogs_doppler_correction_cc_0</source_block_id>
-    <sink_block_id>freq_xlating_fir_filter_xxx_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>satnogs_morse_decoder_0</source_block_id>
@@ -3860,12 +3807,6 @@ we shift the LO a little further</value>
   <connection>
     <source_block_id>satnogs_tcp_rigctl_msg_source_0</source_block_id>
     <sink_block_id>satnogs_coarse_doppler_correction_cc_0</sink_block_id>
-    <source_key>freq</source_key>
-    <sink_key>freq</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>satnogs_tcp_rigctl_msg_source_0</source_block_id>
-    <sink_block_id>satnogs_doppler_correction_cc_0</sink_block_id>
     <source_key>freq</source_key>
     <sink_key>freq</sink_key>
   </connection>

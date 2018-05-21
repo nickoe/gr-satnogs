@@ -5,9 +5,8 @@
 # Title: CW Decoder
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: A CW (Morse) Decoder
-# Generated: Tue May 15 22:58:51 2018
+# Generated: Mon May 21 18:50:09 2018
 ##################################################
-
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -16,6 +15,7 @@ from gnuradio import filter
 from gnuradio import gr
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
+from gnuradio.filter import pfb
 from optparse import OptionParser
 import math
 import osmosdr
@@ -58,7 +58,6 @@ class satnogs_cw_decoder(gr.top_block):
         self.samp_rate_rx = samp_rate_rx = satnogs.hw_rx_settings[rx_sdr_device]['samp_rate']
         self.xlating_decimation = xlating_decimation = int(samp_rate_rx/100e3)
         self.xlate_filter_taps = xlate_filter_taps = firdes.low_pass(1, samp_rate_rx, 125000, 25000, firdes.WIN_HAMMING, 6.76)
-        self.lpf_decimation = lpf_decimation = 5
         self.audio_samp_rate = audio_samp_rate = 48000
 
         ##################################################
@@ -71,20 +70,14 @@ class satnogs_cw_decoder(gr.top_block):
         self.satnogs_morse_decoder_0 = satnogs.morse_decoder(ord('#'), 3)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(16768, iq_file_path, False, enable_iq_dump)
         self.satnogs_frame_file_sink_0_0 = satnogs.frame_file_sink(decoded_data_file_path, 0)
-        self.satnogs_cw_to_symbol_0 = satnogs.cw_to_symbol(samp_rate_rx/xlating_decimation/lpf_decimation/4, 0.75, 0.75, wpm)
-        self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx)
-        self.rational_resampler_xxx_0_0 = filter.rational_resampler_ccc(
-                interpolation=audio_samp_rate,
-                decimation=int((samp_rate_rx/xlating_decimation)/lpf_decimation),
-                taps=None,
-                fractional_bw=None,
-        )
-        self.rational_resampler_xxx_0 = filter.rational_resampler_ccc(
-                interpolation=audio_samp_rate,
-                decimation=int((samp_rate_rx/xlating_decimation)),
-                taps=None,
-                fractional_bw=None,
-        )
+        self.satnogs_cw_to_symbol_0 = satnogs.cw_to_symbol(audio_samp_rate/4, 0.8, 0.75, wpm)
+        self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx / xlating_decimation)
+        self.pfb_arb_resampler_xxx_0 = pfb.arb_resampler_ccf(
+        	  (audio_samp_rate) / (samp_rate_rx / xlating_decimation),
+                  taps=None,
+        	  flt_size=32)
+        self.pfb_arb_resampler_xxx_0.declare_sample_delay(0)
+
         self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + satnogs.handle_rx_dev_args(rx_sdr_device, dev_args) )
         self.osmosdr_source_0.set_sample_rate(samp_rate_rx)
         self.osmosdr_source_0.set_center_freq(rx_freq - lo_offset, 0)
@@ -99,18 +92,21 @@ class satnogs_cw_decoder(gr.top_block):
         self.osmosdr_source_0.set_bandwidth(samp_rate_rx, 0)
 
         self.low_pass_filter_0_0 = filter.fir_filter_fff(4, firdes.low_pass(
-        	4, samp_rate_rx/xlating_decimation/lpf_decimation, 100, 100, firdes.WIN_HAMMING, 6.76))
-        self.low_pass_filter_0 = filter.fir_filter_ccf(lpf_decimation, firdes.low_pass(
-        	lpf_decimation, samp_rate_rx/xlating_decimation, 2e3, 1e3, firdes.WIN_HAMMING, 6.76))
+        	4, audio_samp_rate, 100, 100, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
+        	1, audio_samp_rate, 2e3, 1e3, firdes.WIN_HAMMING, 6.76))
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(xlating_decimation, (xlate_filter_taps), lo_offset, samp_rate_rx)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
-        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(300, 1, 4000)
         self.blocks_complex_to_real_0 = blocks.complex_to_real(1)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
         self.analog_sig_source_x_0 = analog.sig_source_c(audio_samp_rate, analog.GR_COS_WAVE, bfo_freq, 1, 0)
-        self.analog_pll_carriertracking_cc_0 = analog.pll_carriertracking_cc(2*math.pi/100, 2*math.pi*2e3/(samp_rate_rx/xlating_decimation/lpf_decimation), -2*math.pi*2e3/(samp_rate_rx/xlating_decimation/lpf_decimation))
+        self.analog_pll_carriertracking_cc_0 = analog.pll_carriertracking_cc(2*math.pi/100, 2*math.pi*2e3/audio_samp_rate, -2*math.pi*2e3/audio_samp_rate)
+        self.analog_agc_xx_0 = analog.agc_ff(1e-4, 1.0, 1.0)
+        self.analog_agc_xx_0.set_max_gain(65536)
         self.analog_agc2_xx_0_0 = analog.agc2_cc(0.01, 0.001, 0.015, 0.0)
         self.analog_agc2_xx_0_0.set_max_gain(65536)
+
+
 
         ##################################################
         # Connections
@@ -120,22 +116,21 @@ class satnogs_cw_decoder(gr.top_block):
         self.msg_connect((self.satnogs_morse_decoder_0, 'out'), (self.satnogs_udp_msg_sink_0_0, 'in'))
         self.msg_connect((self.satnogs_tcp_rigctl_msg_source_0, 'freq'), (self.satnogs_coarse_doppler_correction_cc_0, 'freq'))
         self.connect((self.analog_agc2_xx_0_0, 0), (self.blocks_multiply_xx_0, 1))
+        self.connect((self.analog_agc_xx_0, 0), (self.low_pass_filter_0_0, 0))
         self.connect((self.analog_pll_carriertracking_cc_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
-        self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_moving_average_xx_0, 0))
+        self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.analog_agc_xx_0, 0))
         self.connect((self.blocks_complex_to_real_0, 0), (self.satnogs_ogg_encoder_0, 0))
-        self.connect((self.blocks_moving_average_xx_0, 0), (self.low_pass_filter_0_0, 0))
-        self.connect((self.blocks_multiply_xx_0, 0), (self.rational_resampler_xxx_0_0, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.low_pass_filter_0, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.rational_resampler_xxx_0, 0))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_complex_to_real_0, 0))
+        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.analog_agc2_xx_0_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.analog_pll_carriertracking_cc_0, 0))
         self.connect((self.low_pass_filter_0_0, 0), (self.satnogs_cw_to_symbol_0, 0))
-        self.connect((self.osmosdr_source_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
-        self.connect((self.rational_resampler_xxx_0, 0), (self.satnogs_iq_sink_0, 0))
-        self.connect((self.rational_resampler_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
-        self.connect((self.rational_resampler_xxx_0_0, 0), (self.blocks_complex_to_real_0, 0))
-        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_iq_sink_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
 
     def get_antenna(self):
         return self.antenna
@@ -279,22 +274,16 @@ class satnogs_cw_decoder(gr.top_block):
         self.samp_rate_rx = samp_rate_rx
         self.set_xlating_decimation(int(self.samp_rate_rx/100e3))
         self.set_xlate_filter_taps(firdes.low_pass(1, self.samp_rate_rx, 125000, 25000, firdes.WIN_HAMMING, 6.76))
+        self.pfb_arb_resampler_xxx_0.set_rate((self.audio_samp_rate) / (self.samp_rate_rx / self.xlating_decimation))
         self.osmosdr_source_0.set_sample_rate(self.samp_rate_rx)
         self.osmosdr_source_0.set_bandwidth(self.samp_rate_rx, 0)
-        self.low_pass_filter_0_0.set_taps(firdes.low_pass(4, self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation, 100, 100, firdes.WIN_HAMMING, 6.76))
-        self.low_pass_filter_0.set_taps(firdes.low_pass(self.lpf_decimation, self.samp_rate_rx/self.xlating_decimation, 2e3, 1e3, firdes.WIN_HAMMING, 6.76))
-        self.analog_pll_carriertracking_cc_0.set_max_freq(2*math.pi*2e3/(self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation))
-        self.analog_pll_carriertracking_cc_0.set_min_freq(-2*math.pi*2e3/(self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation))
 
     def get_xlating_decimation(self):
         return self.xlating_decimation
 
     def set_xlating_decimation(self, xlating_decimation):
         self.xlating_decimation = xlating_decimation
-        self.low_pass_filter_0_0.set_taps(firdes.low_pass(4, self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation, 100, 100, firdes.WIN_HAMMING, 6.76))
-        self.low_pass_filter_0.set_taps(firdes.low_pass(self.lpf_decimation, self.samp_rate_rx/self.xlating_decimation, 2e3, 1e3, firdes.WIN_HAMMING, 6.76))
-        self.analog_pll_carriertracking_cc_0.set_max_freq(2*math.pi*2e3/(self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation))
-        self.analog_pll_carriertracking_cc_0.set_min_freq(-2*math.pi*2e3/(self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation))
+        self.pfb_arb_resampler_xxx_0.set_rate((self.audio_samp_rate) / (self.samp_rate_rx / self.xlating_decimation))
 
     def get_xlate_filter_taps(self):
         return self.xlate_filter_taps
@@ -303,22 +292,17 @@ class satnogs_cw_decoder(gr.top_block):
         self.xlate_filter_taps = xlate_filter_taps
         self.freq_xlating_fir_filter_xxx_0.set_taps((self.xlate_filter_taps))
 
-    def get_lpf_decimation(self):
-        return self.lpf_decimation
-
-    def set_lpf_decimation(self, lpf_decimation):
-        self.lpf_decimation = lpf_decimation
-        self.low_pass_filter_0_0.set_taps(firdes.low_pass(4, self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation, 100, 100, firdes.WIN_HAMMING, 6.76))
-        self.low_pass_filter_0.set_taps(firdes.low_pass(self.lpf_decimation, self.samp_rate_rx/self.xlating_decimation, 2e3, 1e3, firdes.WIN_HAMMING, 6.76))
-        self.analog_pll_carriertracking_cc_0.set_max_freq(2*math.pi*2e3/(self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation))
-        self.analog_pll_carriertracking_cc_0.set_min_freq(-2*math.pi*2e3/(self.samp_rate_rx/self.xlating_decimation/self.lpf_decimation))
-
     def get_audio_samp_rate(self):
         return self.audio_samp_rate
 
     def set_audio_samp_rate(self, audio_samp_rate):
         self.audio_samp_rate = audio_samp_rate
+        self.pfb_arb_resampler_xxx_0.set_rate((self.audio_samp_rate) / (self.samp_rate_rx / self.xlating_decimation))
+        self.low_pass_filter_0_0.set_taps(firdes.low_pass(4, self.audio_samp_rate, 100, 100, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, 2e3, 1e3, firdes.WIN_HAMMING, 6.76))
         self.analog_sig_source_x_0.set_sampling_freq(self.audio_samp_rate)
+        self.analog_pll_carriertracking_cc_0.set_max_freq(2*math.pi*2e3/self.audio_samp_rate)
+        self.analog_pll_carriertracking_cc_0.set_min_freq(-2*math.pi*2e3/self.audio_samp_rate)
 
 
 def argument_parser():
