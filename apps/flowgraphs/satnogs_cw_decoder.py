@@ -5,7 +5,7 @@
 # Title: CW Decoder
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: A CW (Morse) Decoder
-# Generated: Mon May 21 18:50:09 2018
+# Generated: Mon Jun  4 11:44:20 2018
 ##################################################
 
 from gnuradio import analog
@@ -70,7 +70,7 @@ class satnogs_cw_decoder(gr.top_block):
         self.satnogs_morse_decoder_0 = satnogs.morse_decoder(ord('#'), 3)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(16768, iq_file_path, False, enable_iq_dump)
         self.satnogs_frame_file_sink_0_0 = satnogs.frame_file_sink(decoded_data_file_path, 0)
-        self.satnogs_cw_to_symbol_0 = satnogs.cw_to_symbol(audio_samp_rate/4, 0.8, 0.75, wpm)
+        self.satnogs_cw_to_symbol_0 = satnogs.cw_to_symbol(audio_samp_rate/4, 0.4, 0.75, wpm)
         self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx / xlating_decimation)
         self.pfb_arb_resampler_xxx_0 = pfb.arb_resampler_ccf(
         	  (audio_samp_rate) / (samp_rate_rx / xlating_decimation),
@@ -100,8 +100,8 @@ class satnogs_cw_decoder(gr.top_block):
         self.blocks_complex_to_real_0 = blocks.complex_to_real(1)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
         self.analog_sig_source_x_0 = analog.sig_source_c(audio_samp_rate, analog.GR_COS_WAVE, bfo_freq, 1, 0)
-        self.analog_pll_carriertracking_cc_0 = analog.pll_carriertracking_cc(2*math.pi/100, 2*math.pi*2e3/audio_samp_rate, -2*math.pi*2e3/audio_samp_rate)
-        self.analog_agc_xx_0 = analog.agc_ff(1e-4, 1.0, 1.0)
+        self.analog_pll_carriertracking_cc_0 = analog.pll_carriertracking_cc(2*math.pi/400.0, 2*math.pi*2e3/audio_samp_rate, -2*math.pi*2e3/audio_samp_rate)
+        self.analog_agc_xx_0 = analog.agc_ff(1e-3, 1.0, 1.0)
         self.analog_agc_xx_0.set_max_gain(65536)
         self.analog_agc2_xx_0_0 = analog.agc2_cc(0.01, 0.001, 0.015, 0.0)
         self.analog_agc2_xx_0_0.set_max_gain(65536)

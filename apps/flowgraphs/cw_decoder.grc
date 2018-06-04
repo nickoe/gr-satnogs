@@ -309,7 +309,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>rate</key>
-      <value>1e-4</value>
+      <value>1e-3</value>
     </param>
     <param>
       <key>reference</key>
@@ -352,7 +352,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>w</key>
-      <value>2*math.pi/100</value>
+      <value>2*math.pi/400.0</value>
     </param>
     <param>
       <key>max_freq</key>
@@ -3118,7 +3118,7 @@ we shift the LO a little further</value>
     <key>satnogs_cw_to_symbol</key>
     <param>
       <key>threshold</key>
-      <value>0.8</value>
+      <value>0.4</value>
     </param>
     <param>
       <key>alias</key>
