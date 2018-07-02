@@ -175,7 +175,7 @@ namespace gr
             sample = sample - f_average;
 
             // Very basic 1/0 correlation between pattern constan and history
-            if((sample > 0 && synca_seq[i]) || (sample < 0 && !syncb_seq[i])) {
+            if((sample > 0 && synca_seq[i]) || (sample < 0 && !synca_seq[i])) {
                 count_a += 1;
             }
             if((sample > 0 && syncb_seq[i]) || (sample < 0 && !syncb_seq[i])) {
