@@ -5,7 +5,7 @@
 # Title: NOAA APT Decoder
 # Author: Manolis Surligas, George Vardakis
 # Description: A NOAA APT Decoder with automatic image synchronization
-# Generated: Wed Jul  4 10:18:17 2018
+# Generated: Wed Jul  4 12:13:02 2018
 ##################################################
 
 
@@ -72,6 +72,12 @@ class satnogs_noaa_apt_decoder(gr.top_block):
         self.satnogs_noaa_apt_sink_0 = satnogs.noaa_apt_sink(decoded_data_file_path, 2080, 1800, bool(sync), bool(flip_images))
         self.satnogs_iq_sink_0 = satnogs.iq_sink(32767, iq_file_path, False, enable_iq_dump)
         self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx /first_stage_decimation)
+        self.rational_resampler_xxx_2_0 = filter.rational_resampler_ccc(
+                interpolation=int(samp_rate_rx/ ( first_stage_decimation  * int(samp_rate_rx/ first_stage_decimation / initial_bandwidth))),
+                decimation=int(samp_rate_rx /first_stage_decimation),
+                taps=None,
+                fractional_bw=None,
+        )
         self.rational_resampler_xxx_2 = filter.rational_resampler_ccc(
                 interpolation=48000,
                 decimation=int(samp_rate_rx/ ( first_stage_decimation  * int(samp_rate_rx/ first_stage_decimation / initial_bandwidth)) / audio_decimation),
@@ -133,7 +139,6 @@ class satnogs_noaa_apt_decoder(gr.top_block):
         self.connect((self.blocks_complex_to_mag_0, 0), (self.rational_resampler_xxx_0_0, 0))
         self.connect((self.fft_filter_xxx_0, 0), (self.analog_wfm_rcv_0, 0))
         self.connect((self.fft_filter_xxx_0, 0), (self.rational_resampler_xxx_2, 0))
-        self.connect((self.fft_filter_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.fir_filter_xxx_1, 0), (self.rational_resampler_xxx_0, 0))
         self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
         self.connect((self.hilbert_fc_0, 0), (self.blocks_complex_to_mag_0, 0))
@@ -142,7 +147,9 @@ class satnogs_noaa_apt_decoder(gr.top_block):
         self.connect((self.rational_resampler_xxx_0_0, 0), (self.satnogs_noaa_apt_sink_0, 0))
         self.connect((self.rational_resampler_xxx_1, 0), (self.satnogs_ogg_encoder_0, 0))
         self.connect((self.rational_resampler_xxx_2, 0), (self.satnogs_iq_sink_0, 0))
+        self.connect((self.rational_resampler_xxx_2_0, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.fft_filter_xxx_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.rational_resampler_xxx_2_0, 0))
 
     def get_antenna(self):
         return self.antenna
