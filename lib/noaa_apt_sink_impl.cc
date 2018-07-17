@@ -138,6 +138,11 @@ namespace gr
     }
 
     void noaa_apt_sink_impl::set_pixel (size_t x, size_t y, float sample) {
+        // We can encounter NaN here since skip_to read the history whithout checking
+        if(std::isnan(sample)) {
+            sample = 0.0;
+        }
+
         // Adjust dynamic range, using minimum and maximum values
         sample = (sample - f_min_level) / (f_max_level - f_min_level) * 255;
         // Set the pixel in the full image
@@ -215,6 +220,11 @@ namespace gr
 
             // Get the current sample
             float sample = in[i];
+
+            // For some reason the first sample on a Raspberry Pi can be NaN
+            if(std::isnan(sample)) {
+                continue;
+            }
 
             // Update min and max level to adjust dynamic range in set pixel
             f_max_level = std::fmax(f_max_level, sample);
