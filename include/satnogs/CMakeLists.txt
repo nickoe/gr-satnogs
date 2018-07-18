@@ -70,5 +70,6 @@ install(FILES
     quad_demod_filter_ff.h
     decoder_8b10b.h
     ccsds_rs_decoder_mm.h
-    fox_telem_mm.h DESTINATION include/satnogs
+    fox_telem_mm.h
+    lrpt_sync.h DESTINATION include/satnogs
 )

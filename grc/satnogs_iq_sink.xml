@@ -2,7 +2,6 @@
 <block>
   <name>IQ Sink</name>
   <key>satnogs_iq_sink</key>
-  <category>[SatNOGS]</category>
   <import>import satnogs</import>
   <make>satnogs.iq_sink($scale, $filename, $append, $status)</make>
   <callback>open($file)</callback>

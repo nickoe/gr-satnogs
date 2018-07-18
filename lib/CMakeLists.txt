@@ -69,7 +69,8 @@ list(APPEND satnogs_sources
     quad_demod_filter_ff_impl.cc
     decoder_8b10b_impl.cc
     ccsds_rs_decoder_mm_impl.cc
-    fox_telem_mm_impl.cc)
+    fox_telem_mm_impl.cc
+    lrpt_sync_impl.cc)
 
 if(${INCLUDE_DEBUG_BLOCKS})
 	list(APPEND satnogs_sources ${satnogs_debug_sources})
@@ -88,6 +89,8 @@ add_dependencies(gnuradio-satnogs fec)
 target_link_libraries(gnuradio-satnogs
     ${Boost_LIBRARIES}
     ${GNURADIO_ALL_LIBRARIES}
+    gnuradio-blocks
+    gnuradio-digital
     ${CMAKE_THREAD_LIBS_INIT}
     ${NOVA_LIBRARIES}
     ${VOLK_LIBRARIES}

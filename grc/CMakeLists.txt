@@ -29,6 +29,14 @@ list(APPEND debug_blocks
 
 list(APPEND enabled_blocks
     satnogs_block_tree.xml
+    satnogs_ax25_decoder_bm.xml
+    satnogs_ax25_encoder_mb.xml
+    satnogs_ccsds_rs_decoder_mm.xml
+    satnogs_decoder_8b10b.xml
+    satnogs_fox_telem_mm.xml
+    satnogs_frame_file_sink.xml
+    satnogs_iq_sink.xml
+    satnogs_lrpt_sync.xml 
     satnogs_morse_decoder.xml
     satnogs_multi_format_msg_sink.xml
     satnogs_ogg_encoder.xml 
@@ -38,13 +46,10 @@ list(APPEND enabled_blocks
     satnogs_doppler_correction_cc.xml
     satnogs_udp_msg_sink.xml
     satnogs_coarse_doppler_correction_cc.xml
-    satnogs_ax25_encoder_mb.xml
-    satnogs_ax25_decoder_bm.xml
     satnogs_waterfall_sink.xml
+    satnogs_quad_demod_filter_ff.xml
     satnogs_ogg_source.xml
     satnogs_noaa_apt_sink.xml
-    satnogs_frame_file_sink.xml
-    satnogs_iq_sink.xml 
 )
 
 if(${INCLUDE_DEBUG_BLOCKS})
@@ -52,8 +57,5 @@ if(${INCLUDE_DEBUG_BLOCKS})
 endif()
 install(FILES
     ${enabled_blocks}
-    satnogs_quad_demod_filter_ff.xml
-    satnogs_decoder_8b10b.xml
-    satnogs_ccsds_rs_decoder_mm.xml
-    satnogs_fox_telem_mm.xml DESTINATION share/gnuradio/grc/blocks
+    DESTINATION share/gnuradio/grc/blocks
 )

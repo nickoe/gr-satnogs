@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<block>
+  <name>LRPT Frame Sync</name>
+  <key>satnogs_lrpt_sync</key>
+  <import>import satnogs</import>
+  <make>satnogs.lrpt_sync($thresh)</make>
+
+  <param>
+    <name>Threshold</name>
+    <key>thresh</key>
+    <value>2</value>
+    <type>int</type>
+  </param>
+
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+
+</block>
