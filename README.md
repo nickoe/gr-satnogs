@@ -62,6 +62,23 @@ will install the libraries at the `/usr/lib64` directory.
 ## Website
 For more indormation about SatNOGS please visit our [site](https://satnogs.org/).
 
+## Release Policy
+The `gr-satnogs` OOT module uses the `major.api-compatibility.minor` 
+versioning scheme. 
+is used by the [satnogs-client](https://gitlab.com/librespacefoundation/satnogs/satnogs-client), so the release and versioning policy is based on how the
+satnogs client is affected by the changes on the `gr-satnogs` software.
+
+* Minor changes, bug fixes or improvements that do not affect in anyway
+the `satnogs-client` advance the `minor` version.
+* The `api-compatibility` indicates changes that require modifications on `satnogs-client` but do not brake the backwards compatibility (e.g a new satallite decoder). In other words,
+the `satnogs-client` should continue to operate normally without any modifications.
+Changes on `satnogs-client` should be performed only to integrate the new features.
+* `major` version advances when the changes break backwards compatibility with
+the `satnogs-client`.
+
+For every release change a tag with the corresponding version is created.
+Releases can be retrieved by the [tags](https://gitlab.com/librespacefoundation/satnogs/gr-satnogs/tags) page. 
+
 ## License
 
 &copy; 2016,2017,2018 [Libre Space Foundation](http://librespacefoundation.org).
