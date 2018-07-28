@@ -32,6 +32,7 @@ list(APPEND HEADER_FILES
     api.h
     ax25.h
     config.h
+    convolutional_deinterleaver.h
     log.h
     morse_tree.h
     morse.h
@@ -71,5 +72,6 @@ install(FILES
     decoder_8b10b.h
     ccsds_rs_decoder_mm.h
     fox_telem_mm.h
-    lrpt_sync.h DESTINATION include/satnogs
+    lrpt_sync.h
+    lrpt_decoder.h DESTINATION include/satnogs
 )

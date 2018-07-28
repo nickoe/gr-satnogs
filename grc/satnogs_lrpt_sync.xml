@@ -16,5 +16,15 @@
     <name>in</name>
     <type>complex</type>
   </sink>
+  
+  <source>
+    <name>cadu</name>
+    <type>message</type>
+  </source>
+  
+  <source>
+    <name>reset</name>
+    <type>message</type>
+  </source>
 
 </block>

@@ -22,6 +22,7 @@
 #define INCLUDED_SATNOGS_LRPT_SYNC_IMPL_H
 
 #include <satnogs/lrpt_sync.h>
+#include <satnogs/convolutional_deinterleaver.h>
 #include <gnuradio/digital/constellation.h>
 
 namespace gr
@@ -51,6 +52,7 @@ private:
   size_t                                d_received;
   gr_complex                            d_rotate;
   digital::constellation_qpsk::sptr     d_qpsk;
+  convolutional_deinterleaver           d_conv_deinter;
   uint64_t                              d_shift_reg0;
   uint64_t                              d_shift_reg1;
   uint64_t                              d_shift_reg2;

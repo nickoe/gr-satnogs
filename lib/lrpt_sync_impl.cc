@@ -57,11 +57,12 @@ lrpt_sync_impl::lrpt_sync_impl (size_t threshold) :
                     */
                    d_window((72 + 8)/2),
                    /* Each CADU has the 4 byte ASM and a VCDU of 1020 bytes*/
-                   d_coded_cadu_len((4 + 1020) * 2),
+                   d_coded_cadu_len(1020 * 2),
                    d_frame_sync(false),
                    d_received(0),
                    d_rotate(1, 0),
                    d_qpsk(digital::constellation_qpsk::make()),
+                   d_conv_deinter(36, 2048),
                    d_shift_reg0(0x0),
                    d_shift_reg1(0x0),
                    d_shift_reg2(0x0),
@@ -96,9 +97,10 @@ lrpt_sync_impl::lrpt_sync_impl (size_t threshold) :
     throw std::runtime_error("lrpt_sync: Could not allocate memory");
   }
 
-  d_coded_cadu = new uint8_t[(4 + 1020) * 2];
-  /* Copy the coded ASM in front */
-  memcpy(d_coded_cadu, &d_asm_coded, sizeof(uint64_t));
+  d_coded_cadu = new uint8_t[d_coded_cadu_len];
+
+  message_port_register_out(pmt::mp("cadu"));
+  message_port_register_out(pmt::mp("reset"));
 }
 
 /*
@@ -139,38 +141,42 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
      */
     for(int j = 0; j < d_window; j++) {
       bits = d_qpsk->decision_maker(in + i * d_window + j);
+      //bits = (d_conv_deinter.decode_bit(bits >> 1) << 1) | d_conv_deinter.decode_bit(bits & 0x1);
       d_shift_reg0 = (d_shift_reg0 << 2) | bits;
       if(found_sync(d_shift_reg0)) {
         d_rotate = gr_complex(1.0, 0);
         d_frame_sync = true;
-        d_received = sizeof(uint64_t);
+        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
 
       bits = d_qpsk->decision_maker(d_rotate_pi2 + j);
+      //bits = (d_conv_deinter.decode_bit(bits >> 1) << 1) | d_conv_deinter.decode_bit(bits & 0x1);
       d_shift_reg1 = (d_shift_reg1 << 2) | bits;
       if(found_sync(d_shift_reg1)) {
         d_rotate = gr_complex(0.0, 1.0);
         d_frame_sync = true;
-        d_received = sizeof(uint64_t);
+        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
 
       bits = d_qpsk->decision_maker(d_rotate_2pi2 + j);
+      //bits = (d_conv_deinter.decode_bit(bits >> 1) << 1) | d_conv_deinter.decode_bit(bits & 0x1);
       d_shift_reg2 = (d_shift_reg2 << 2) | bits;
       if(found_sync(d_shift_reg2)) {
         d_rotate = gr_complex(-1.0, 0);
         d_frame_sync = true;
-        d_received = sizeof(uint64_t);
+        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
 
       bits = d_qpsk->decision_maker(d_rotate_3pi2 + j);
+      //bits = (d_conv_deinter.decode_bit(bits >> 1) << 1) | d_conv_deinter.decode_bit(bits & 0x1);
       d_shift_reg3 = (d_shift_reg3 << 2) | bits;
       if(found_sync(d_shift_reg3)) {
         d_rotate = gr_complex(0.0, -1.0);
         d_frame_sync = true;
-        d_received = sizeof(uint64_t);
+        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
     }
@@ -202,6 +208,8 @@ lrpt_sync_impl::work_sync(const gr_complex *in, int noutput_items)
         LOG_ERROR("frame");
         d_received = 0;
         d_frame_sync = false;
+        message_port_pub (pmt::mp ("cadu"),
+                          pmt::make_blob (d_coded_cadu, d_coded_cadu_len));
         return i * d_window + j + 4;
       }
     }
