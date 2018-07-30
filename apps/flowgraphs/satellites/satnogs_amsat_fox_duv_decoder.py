@@ -5,7 +5,7 @@
 # Title: AMSAT FOX DUV Decoder
 # Author: Thanos Giolias (agiolias@csd.uoc.gr), Nikos Karamolegos (karamolegkos.n@gmail.com), Manolis Surligas (surligas@gmail.com)
 # Description: A DUV Decoder for the AMSAT FOX satellites
-# Generated: Sun Mar 25 17:42:58 2018
+# Generated: Mon Jul 30 13:36:42 2018
 ##################################################
 
 from gnuradio import analog
@@ -90,7 +90,7 @@ class satnogs_amsat_fox_duv_decoder(gr.top_block):
         self.osmosdr_source_0.set_bandwidth(samp_rate_rx, 0)
 
         self.low_pass_filter_1 = filter.fir_filter_fff(100, firdes.low_pass(
-        	100, audio_samp_rate, 195, 10, firdes.WIN_HAMMING, 6.76))
+        	1.0, audio_samp_rate, 195, 10, firdes.WIN_HAMMING, 6.76))
         self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
         	1, audio_samp_rate, deviation+max_modulation_freq, 3000, firdes.WIN_HAMMING, 6.76))
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(int(samp_rate_rx/filter_rate), (xlate_filter_taps), lo_offset, samp_rate_rx)
@@ -103,7 +103,9 @@ class satnogs_amsat_fox_duv_decoder(gr.top_block):
                 taps=None,
                 fractional_bw=None,
         )
-        self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf(1.0)
+        self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf(1.2)
+
+
 
         ##################################################
         # Connections
@@ -285,7 +287,7 @@ class satnogs_amsat_fox_duv_decoder(gr.top_block):
 
     def set_audio_samp_rate(self, audio_samp_rate):
         self.audio_samp_rate = audio_samp_rate
-        self.low_pass_filter_1.set_taps(firdes.low_pass(100, self.audio_samp_rate, 195, 10, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(1.0, self.audio_samp_rate, 195, 10, firdes.WIN_HAMMING, 6.76))
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, self.deviation+self.max_modulation_freq, 3000, firdes.WIN_HAMMING, 6.76))
         self.digital_clock_recovery_mm_xx_0_0_0.set_omega((self.audio_samp_rate/100.0) / 200)
 

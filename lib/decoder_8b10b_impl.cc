@@ -100,7 +100,7 @@ namespace gr
       return true;
     }
 
-    uint8_t
+    void
     decoder_8b10b_impl::process_10b (uint16_t word, int write_pos)
     {
       uint16_t diff_bits = 0;

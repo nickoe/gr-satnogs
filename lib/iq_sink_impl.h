@@ -46,7 +46,6 @@ namespace gr
       size_t d_num_points;
       float d_scale;
       int16_t *d_out;
-      const char *d_filename;
 
     public:
       iq_sink_impl (const float scale, const char *filename, bool append,

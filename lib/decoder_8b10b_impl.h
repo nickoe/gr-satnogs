@@ -578,7 +578,7 @@ namespace gr
       bool
       set_access_code (const std::string &access_code);
 
-      uint8_t
+      void
       process_10b (uint16_t word, int write_pos);
 
       // Where all the action really happens

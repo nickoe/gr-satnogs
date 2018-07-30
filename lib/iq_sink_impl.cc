@@ -79,9 +79,7 @@ namespace gr
         case IQ_SINK_STATUS_NULL:
           {
             return noutput_items;
-            break;
           }
-
         case IQ_SINK_STATUS_ACTIVE:
           {
             /* update d_fp is required */
@@ -112,11 +110,11 @@ namespace gr
               }
               nwritten += count;
             }
-
             return nwritten;
-            break;
           }
         }
+      /* Should never reach here */
+      return noutput_items;
     }
 
   } /* namespace satnogs */
