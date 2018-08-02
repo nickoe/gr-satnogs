@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<block>
+  <name>LRPT Frame Decoder</name>
+  <key>satnogs_lrpt_decoder</key>
+  <import>import satnogs</import>
+  <make>satnogs.lrpt_decoder()</make>
+
+  <sink>
+    <name>cadu</name>
+    <type>message</type>
+  </sink>
+  
+  <source>
+    <name>frame</name>
+    <type>message</type>
+  </source>
+</block>

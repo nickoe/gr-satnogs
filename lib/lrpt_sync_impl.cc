@@ -25,6 +25,7 @@
 #include <gnuradio/io_signature.h>
 #include "lrpt_sync_impl.h"
 #include <satnogs/log.h>
+#include <satnogs/utils.h>
 
 #include <volk/volk.h>
 #include <gnuradio/blocks/count_bits.h>
@@ -57,7 +58,7 @@ lrpt_sync_impl::lrpt_sync_impl (size_t threshold) :
                     */
                    d_window((72 + 8)/2),
                    /* Each CADU has the 4 byte ASM and a VCDU of 1020 bytes*/
-                   d_coded_cadu_len(1020 * 2),
+                   d_coded_cadu_len(1020 * 2 + 4*2),
                    d_frame_sync(false),
                    d_received(0),
                    d_rotate(1, 0),
@@ -97,10 +98,12 @@ lrpt_sync_impl::lrpt_sync_impl (size_t threshold) :
     throw std::runtime_error("lrpt_sync: Could not allocate memory");
   }
 
+  uint64_t asm_coded = reverse_uint64_bytes(d_asm_coded);
   d_coded_cadu = new uint8_t[d_coded_cadu_len];
+  memcpy(d_coded_cadu, &asm_coded, sizeof(uint64_t));
+  d_received =  sizeof(uint64_t);
 
   message_port_register_out(pmt::mp("cadu"));
-  message_port_register_out(pmt::mp("reset"));
 }
 
 /*
@@ -146,7 +149,6 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
       if(found_sync(d_shift_reg0)) {
         d_rotate = gr_complex(1.0, 0);
         d_frame_sync = true;
-        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
 
@@ -156,7 +158,6 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
       if(found_sync(d_shift_reg1)) {
         d_rotate = gr_complex(0.0, 1.0);
         d_frame_sync = true;
-        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
 
@@ -166,7 +167,6 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
       if(found_sync(d_shift_reg2)) {
         d_rotate = gr_complex(-1.0, 0);
         d_frame_sync = true;
-        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
 
@@ -176,7 +176,6 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
       if(found_sync(d_shift_reg3)) {
         d_rotate = gr_complex(0.0, -1.0);
         d_frame_sync = true;
-        LOG_ERROR("SYNC");
         return i * d_window + j;
       }
     }
@@ -192,11 +191,7 @@ lrpt_sync_impl::work_sync(const gr_complex *in, int noutput_items)
   for(int i = 0; i < multiple; i++) {
     volk_32fc_s32fc_multiply_32fc(d_corrected, in + i * d_window,
                                   d_rotate, d_window);
-    /*
-     * Skip UW, for now
-     * NOTE: UW is unencoded
-     */
-    for(int j = 0; j < d_window - 4; j += 4) {
+    for(int j = 0; j < d_window; j += 4) {
       b = 0;
       b = d_qpsk->decision_maker(d_corrected + j) << 6;
       b |= d_qpsk->decision_maker(d_corrected + j + 1) << 4;
@@ -206,7 +201,7 @@ lrpt_sync_impl::work_sync(const gr_complex *in, int noutput_items)
       d_coded_cadu[d_received++] = b;
       if(d_received == d_coded_cadu_len) {
         LOG_ERROR("frame");
-        d_received = 0;
+        d_received = sizeof(uint64_t);
         d_frame_sync = false;
         message_port_pub (pmt::mp ("cadu"),
                           pmt::make_blob (d_coded_cadu, d_coded_cadu_len));

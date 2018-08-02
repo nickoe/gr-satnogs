@@ -36,6 +36,7 @@ list(APPEND enabled_blocks
     satnogs_fox_telem_mm.xml
     satnogs_frame_file_sink.xml
     satnogs_iq_sink.xml
+    satnogs_lrpt_decoder.xml 
     satnogs_lrpt_sync.xml 
     satnogs_morse_decoder.xml
     satnogs_multi_format_msg_sink.xml

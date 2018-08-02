@@ -25,7 +25,9 @@
 #include <gnuradio/io_signature.h>
 #include "lrpt_decoder_impl.h"
 #include <satnogs/log.h>
-#include <fec.h>
+extern "C" {
+  #include <fec.h>
+}
 
 namespace gr
 {
@@ -45,21 +47,17 @@ lrpt_decoder_impl::lrpt_decoder_impl()
 : gr::block("lrpt_decoder",
     gr::io_signature::make(0, 0, 0),
     gr::io_signature::make(0, 0, 0)),
-    d_cadu_len(1020),
-    d_coded_cadu_len(1020 * 2),
+    d_cadu_len(1020 + 4),
+    d_coded_cadu_len(1020 * 2 + 4*2),
     d_conv_deinterl(36, 2048)
 {
 
   message_port_register_in(pmt::mp("cadu"));
-  message_port_register_in(pmt::mp("reset"));
+  message_port_register_out(pmt::mp("frame"));
 
   set_msg_handler (
       pmt::mp ("cadu"),
       boost::bind (&lrpt_decoder_impl::decode, this, _1));
-
-  set_msg_handler (
-      pmt::mp ("reset"),
-      boost::bind (&lrpt_decoder_impl::reset, this, _1));
 
   d_vt = create_viterbi27(d_cadu_len * 8);
   if(!d_vt) {
@@ -69,7 +67,7 @@ lrpt_decoder_impl::lrpt_decoder_impl()
   set_viterbi27_polynomial(polys);
 
   d_cadu = new uint8_t[d_cadu_len];
-  d_coded_cadu_deinterl = new uint8_t[d_coded_cadu_len];
+  d_coded_cadu_syms = new uint8_t[d_coded_cadu_len * 8];
 
 }
 
@@ -80,7 +78,7 @@ lrpt_decoder_impl::~lrpt_decoder_impl ()
 {
 
   delete [] d_cadu;
-  delete [] d_coded_cadu_deinterl;
+  delete [] d_coded_cadu_syms;
 }
 
 void
@@ -92,20 +90,23 @@ lrpt_decoder_impl::decode (pmt::pmt_t m)
     return;
   }
 
-  for(size_t i = 0; i < d_coded_cadu_len; i++) {
-    d_coded_cadu_deinterl[i] = d_conv_deinterl.decode_byte(coded_cadu[i]);
-  }
   init_viterbi27(d_vt, 0);
 
+  for(size_t i = 0; i < d_coded_cadu_len; i++) {
+    d_coded_cadu_syms[i * 8] = ~(255 + (coded_cadu[i] >> 7));
+    d_coded_cadu_syms[i * 8 + 1] = ~(255 + (coded_cadu[i] >> 6) & 0x1);
+    d_coded_cadu_syms[i * 8 + 2] = ~(255 + (coded_cadu[i] >> 5) & 0x1);
+    d_coded_cadu_syms[i * 8 + 3] = ~(255 + (coded_cadu[i] >> 4) & 0x1);
+    d_coded_cadu_syms[i * 8 + 4] = ~(255 + (coded_cadu[i] >> 3) & 0x1);
+    d_coded_cadu_syms[i * 8 + 5] = ~(255 + (coded_cadu[i] >> 2) & 0x1);
+    d_coded_cadu_syms[i * 8 + 6] = ~(255 + (coded_cadu[i] >> 1) & 0x1);
+    d_coded_cadu_syms[i * 8 + 7] = ~(255 + (coded_cadu[i] & 0x1));
+  }
+  update_viterbi27_blk(d_vt, d_coded_cadu_syms, d_cadu_len * 8);
+  chainback_viterbi27(d_vt, d_cadu, d_cadu_len * 8, 0);
+  message_port_pub(pmt::mp("frame"), pmt::make_blob(d_cadu, d_cadu_len));
 }
 
-void
-lrpt_decoder_impl::reset (pmt::pmt_t m)
-{
-  if(pmt::to_bool(m)) {
-    d_conv_deinterl.reset();
-  }
-}
 
 
 } /* namespace satnogs */

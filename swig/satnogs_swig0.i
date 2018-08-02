@@ -35,6 +35,7 @@
 #include "satnogs/decoder_8b10b.h"
 #include "satnogs/ccsds_rs_decoder_mm.h"
 #include "satnogs/fox_telem_mm.h"
+#include "satnogs/lrpt_decoder.h"
 #include "satnogs/lrpt_sync.h"
 %}
 
@@ -117,3 +118,6 @@ GR_SWIG_BLOCK_MAGIC2(satnogs, fox_telem_mm);
 
 %include "satnogs/lrpt_sync.h"
 GR_SWIG_BLOCK_MAGIC2(satnogs, lrpt_sync);
+
+%include "satnogs/lrpt_decoder.h"
+GR_SWIG_BLOCK_MAGIC2(satnogs, lrpt_decoder);

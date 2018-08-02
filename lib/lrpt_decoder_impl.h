@@ -40,15 +40,12 @@ private:
   const size_t                  d_cadu_len;
   const size_t                  d_coded_cadu_len;
   convolutional_deinterleaver   d_conv_deinterl;
-  uint8_t                       *d_coded_cadu_deinterl;
+  uint8_t                       *d_coded_cadu_syms;
   uint8_t                       *d_cadu;
   void                          *d_vt;
 
   void
   decode(pmt::pmt_t m);
-
-  void
-  reset(pmt::pmt_t m);
 };
 
 } // namespace satnogs
