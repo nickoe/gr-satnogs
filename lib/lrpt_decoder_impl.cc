@@ -25,6 +25,9 @@
 #include <gnuradio/io_signature.h>
 #include "lrpt_decoder_impl.h"
 #include <satnogs/log.h>
+#include <satnogs/utils.h>
+
+
 extern "C" {
   #include <fec.h>
 }
@@ -47,11 +50,18 @@ lrpt_decoder_impl::lrpt_decoder_impl()
 : gr::block("lrpt_decoder",
     gr::io_signature::make(0, 0, 0),
     gr::io_signature::make(0, 0, 0)),
-    d_cadu_len(1020 + 4),
-    d_coded_cadu_len(1020 * 2 + 4*2),
-    d_conv_deinterl(36, 2048)
+    /*
+     * Metop violates the standard as many times as possible...
+     * The frame should contain 128 RS check symbols at the end.
+     * For some unknown reasons, it seems that the RS encoding is not performed.
+     * Thus, they dropped the check symbols at the end of the frame.
+     */
+    d_cadu_len(1020 + 4 - 128),
+    d_coded_cadu_len(1020 * 2 + 4*2 - 128 * 2),
+    d_mpdu_max_len(59400),
+    d_scrambler(0x2A9, 0xFF, 7),
+    d_have_mpdu(false)
 {
-
   message_port_register_in(pmt::mp("cadu"));
   message_port_register_out(pmt::mp("frame"));
 
@@ -63,11 +73,13 @@ lrpt_decoder_impl::lrpt_decoder_impl()
   if(!d_vt) {
     throw std::runtime_error("lrpt_decoder: Failed to init Viterbi decoder");
   }
-  int polys[2] = {0x79, 0x5b};
+
+  int polys[2] = {0x4f, 0x6d};
   set_viterbi27_polynomial(polys);
 
   d_cadu = new uint8_t[d_cadu_len];
   d_coded_cadu_syms = new uint8_t[d_coded_cadu_len * 8];
+  d_mpdu = new uint8_t[d_mpdu_max_len];
 
 }
 
@@ -79,6 +91,7 @@ lrpt_decoder_impl::~lrpt_decoder_impl ()
 
   delete [] d_cadu;
   delete [] d_coded_cadu_syms;
+  delete [] d_mpdu;
 }
 
 void
@@ -93,20 +106,67 @@ lrpt_decoder_impl::decode (pmt::pmt_t m)
   init_viterbi27(d_vt, 0);
 
   for(size_t i = 0; i < d_coded_cadu_len; i++) {
-    d_coded_cadu_syms[i * 8] = ~(255 + (coded_cadu[i] >> 7));
-    d_coded_cadu_syms[i * 8 + 1] = ~(255 + (coded_cadu[i] >> 6) & 0x1);
-    d_coded_cadu_syms[i * 8 + 2] = ~(255 + (coded_cadu[i] >> 5) & 0x1);
-    d_coded_cadu_syms[i * 8 + 3] = ~(255 + (coded_cadu[i] >> 4) & 0x1);
-    d_coded_cadu_syms[i * 8 + 4] = ~(255 + (coded_cadu[i] >> 3) & 0x1);
-    d_coded_cadu_syms[i * 8 + 5] = ~(255 + (coded_cadu[i] >> 2) & 0x1);
-    d_coded_cadu_syms[i * 8 + 6] = ~(255 + (coded_cadu[i] >> 1) & 0x1);
-    d_coded_cadu_syms[i * 8 + 7] = ~(255 + (coded_cadu[i] & 0x1));
+    d_coded_cadu_syms[i * 8] = 0xFF * (coded_cadu[i] >> 7);
+    d_coded_cadu_syms[i * 8 + 1] = 0xFF * ((coded_cadu[i] >> 6) & 0x1);
+    d_coded_cadu_syms[i * 8 + 2] = 0xFF * ((coded_cadu[i] >> 5) & 0x1);
+    d_coded_cadu_syms[i * 8 + 3] = 0xFF * ((coded_cadu[i] >> 4) & 0x1);
+    d_coded_cadu_syms[i * 8 + 4] = 0xFF * ((coded_cadu[i] >> 3) & 0x1);
+    d_coded_cadu_syms[i * 8 + 5] = 0xFF * ((coded_cadu[i] >> 2) & 0x1);
+    d_coded_cadu_syms[i * 8 + 6] = 0xFF * ((coded_cadu[i] >> 1) & 0x1);
+    d_coded_cadu_syms[i * 8 + 7] = 0xFF * ((coded_cadu[i] & 0x1));
   }
+
+  /* Convolutional decoding */
   update_viterbi27_blk(d_vt, d_coded_cadu_syms, d_cadu_len * 8);
   chainback_viterbi27(d_vt, d_cadu, d_cadu_len * 8, 0);
-  message_port_pub(pmt::mp("frame"), pmt::make_blob(d_cadu, d_cadu_len));
+
+  /* Descrambling */
+  d_scrambler.reset();
+  d_scrambler.descramble(d_cadu + 4, d_cadu + 4, d_cadu_len - 4, true);
+  decode_ccsds_packet(d_cadu + 4);
 }
 
+
+void
+lrpt_decoder_impl::decode_ccsds_packet(const uint8_t *cvcdu)
+{
+  /* Check first the VCDU version and if encryption is off */
+  if( (cvcdu[0] >> 6) != 0x1) {
+    return;
+  }
+  if(cvcdu[6] != 0x0 || cvcdu[7] != 0x0) {
+    return;
+  }
+
+  /* Check if the VCDU contans data */
+  //if((cvcdu[8] >> 3) != 0x0 && (cvcdu[8] >> 3) != 0x1f) {
+  //  return;
+  //}
+
+  const uint8_t *mpdu = cvcdu + 10;
+  /* Check CCSDS packet version and type */
+  //if( (mpdu[0] >> 5) != 0x0) {
+  //  return;
+ // }
+
+  uint32_t vcdu_seq = 0;
+  vcdu_seq = cvcdu[2];
+  vcdu_seq = (vcdu_seq << 8) | cvcdu[3];
+  vcdu_seq = (vcdu_seq << 8) | cvcdu[4];
+
+  uint16_t hdr_ptr = 0;
+  hdr_ptr = cvcdu[8] & 0x7;
+  hdr_ptr = (hdr_ptr << 8) | cvcdu[9];
+
+  /* Try to find the start of a MPDU */
+  if(!d_have_mpdu) {
+    if(hdr_ptr != 0) {
+      return;
+    }
+    d_have_mpdu = true;
+  }
+  message_port_pub(pmt::mp("frame"), pmt::make_blob(cvcdu, d_cadu_len - 4));
+}
 
 
 } /* namespace satnogs */

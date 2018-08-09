@@ -26,97 +26,117 @@
 #include <satnogs/whitening.h>
 #include <satnogs/utils.h>
 
-namespace gr {
-  namespace satnogs {
+namespace gr
+{
+namespace satnogs
+{
 
-    /**
-     * Data whitening and de-whitening class
-     * @param mask the polynomial mask
-     * @param seed the initial seed
-     * @param order the order of the shift register. This is equal to the
-     * number of memory stages.
-     */
-    whitening::whitening (uint32_t mask, uint32_t seed, uint32_t order) :
-	    d_lfsr(mask, seed, order)
-    {
+/**
+ * Data whitening and de-whitening class
+ * @param mask the polynomial mask
+ * @param seed the initial seed
+ * @param order the order of the shift register. This is equal to the
+ * number of memory stages.
+ */
+whitening::whitening (uint32_t mask, uint32_t seed, uint32_t order) :
+        d_lfsr (mask, seed, order)
+{
+}
+
+/**
+ * Resets the scrambler (or the descrambler) to the initial stage and
+ * the initial seed.
+ */
+void
+whitening::reset ()
+{
+  d_lfsr.reset ();
+}
+
+/**
+ * Performs data scrambling
+ * @param out the output buffer
+ * @param in the input buffer
+ * @param len the number of the bytes to be scrambled
+ * @param msb if set to true, the descrambler starts from the msb
+ */
+void
+whitening::scramble (uint8_t* out, const uint8_t* in, size_t len, bool msb)
+{
+  size_t i;
+  uint8_t b;
+  if(msb) {
+    for (i = 0; i < len; i++) {
+      b = d_lfsr.next_bit () << 7;
+      b |= d_lfsr.next_bit () << 6;
+      b |= d_lfsr.next_bit () << 5;
+      b |= d_lfsr.next_bit () << 4;
+      b |= d_lfsr.next_bit () << 3;
+      b |= d_lfsr.next_bit () << 2;
+      b |= d_lfsr.next_bit () << 1;
+      b |= d_lfsr.next_bit ();
+      out[i] = in[i] ^ b;
     }
-
-    /**
-     * Resets the scrambler (or the descrambler) to the initial stage and
-     * the initial seed.
-     */
-    void
-    whitening::reset ()
-    {
-      d_lfsr.reset();
+  }
+  else{
+    for (i = 0; i < len; i++) {
+      b = d_lfsr.next_bit ();
+      b |= d_lfsr.next_bit () << 1;
+      b |= d_lfsr.next_bit () << 2;
+      b |= d_lfsr.next_bit () << 3;
+      b |= d_lfsr.next_bit () << 4;
+      b |= d_lfsr.next_bit () << 5;
+      b |= d_lfsr.next_bit () << 6;
+      b |= d_lfsr.next_bit () << 7;
+      out[i] = in[i] ^ b;
     }
+  }
+}
 
-    /**
-     * Performs data scrambling
-     * @param out the output buffer
-     * @param in the input buffer
-     * @param len the number of the bytes to be scrambled
-     */
-    void
-    whitening::scramble (uint8_t* out, const uint8_t* in, size_t len)
-    {
-      size_t i;
-      uint8_t b;
-      for(i = 0; i < len; i++){
-	b = d_lfsr.next_bit();
-	b |= d_lfsr.next_bit() << 1;
-	b |= d_lfsr.next_bit() << 2;
-	b |= d_lfsr.next_bit() << 3;
-	b |= d_lfsr.next_bit() << 4;
-	b |= d_lfsr.next_bit() << 5;
-	b |= d_lfsr.next_bit() << 6;
-	b |= d_lfsr.next_bit() << 7;
-	out[i] = in[i] ^ b;
-      }
-    }
+/**
+ * Performs data de-scrambling
+ * @param out the output buffer
+ * @param in the input buffer
+ * @param len the number of the bytes to be de-scrambled
+ * @param msb if set to true, the descrambler starts from the msb
+ */
+void
+whitening::descramble (uint8_t* out, const uint8_t* in, size_t len,
+                       bool msb)
+{
+  scramble (out, in, len, msb);
+}
 
-    /**
-     * Performs data de-scrambling
-     * @param out the output buffer
-     * @param in the input buffer
-     * @param len the number of the bytes to be de-scrambled
-     */
-    void
-    whitening::descramble (uint8_t* out, const uint8_t* in, size_t len)
-    {
-      scramble(out, in, len);
-    }
+/**
+ * Performs data scrambling. The input and output buffer
+ * contain one bit per byte
+ * @param out the output buffer
+ * @param in the input buffer
+ * @param bits_num the number of bits to be scrambled
+ */
+void
+whitening::scramble_one_bit_per_byte (uint8_t* out, const uint8_t* in,
+                                      size_t bits_num)
+{
+  size_t i;
+  for (i = 0; i < bits_num; i++) {
+    out[i] = in[i] ^ d_lfsr.next_bit ();
+  }
+}
 
-    /**
-     * Performs data scrambling. The input and output buffer
-     * contain one bit per byte
-     * @param out the output buffer
-     * @param in the input buffer
-     * @param bits_num the number of bits to be scrambled
-     */
-    void
-    whitening::scramble_one_bit_per_byte (uint8_t* out, const uint8_t* in,
-					  size_t bits_num)
-    {
-      size_t i;
-      for(i = 0; i < bits_num; i++){
-	out[i] = in[i] ^ d_lfsr.next_bit();
-      }
-    }
+/**
+ * Performs data descrambling. The input and output buffer
+ * contain one bit per byte
+ * @param out the output buffer
+ * @param in the input buffer
+ * @param bits_num the number of bits to be descrambled
+ */
+void
+whitening::descramble_one_bit_per_byte (uint8_t* out, const uint8_t* in,
+                                        size_t bits_num)
+{
+  scramble_one_bit_per_byte (out, in, bits_num);
+}
 
-    /**
-     * Performs data descrambling. The input and output buffer
-     * contain one bit per byte
-     * @param out the output buffer
-     * @param in the input buffer
-     * @param bits_num the number of bits to be descrambled
-     */
-    void
-    whitening::descramble_one_bit_per_byte (uint8_t* out, const uint8_t* in,
-					    size_t bits_num)
-    {
-      scramble_one_bit_per_byte(out, in, bits_num);
-    }
-
-  } /* namespace satnogs */
+} /* namespace satnogs */
 } /* namespace gr */

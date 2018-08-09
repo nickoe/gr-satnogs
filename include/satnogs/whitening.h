@@ -41,8 +41,10 @@ namespace gr
       void
       reset();
 
-      void scramble(uint8_t *out, const uint8_t *in, size_t len);
-      void descramble(uint8_t *out, const uint8_t *in, size_t len);
+      void scramble(uint8_t *out, const uint8_t *in, size_t len,
+                    bool msb = false);
+      void descramble(uint8_t *out, const uint8_t *in, size_t len,
+                      bool msb = false);
 
       void
       scramble_one_bit_per_byte (uint8_t *out, const uint8_t *in,

@@ -44,7 +44,7 @@ public:
 private:
   const size_t                          d_thresh;
   const uint64_t                        d_asm_coded;
-  const uint64_t                        d_asm_coded_len;
+  const size_t                          d_asm_coded_len;
   const uint64_t                        d_asm_coded_mask;
   const int                             d_window;
   const size_t                          d_coded_cadu_len;
@@ -52,7 +52,6 @@ private:
   size_t                                d_received;
   gr_complex                            d_rotate;
   digital::constellation_qpsk::sptr     d_qpsk;
-  convolutional_deinterleaver           d_conv_deinter;
   uint64_t                              d_shift_reg0;
   uint64_t                              d_shift_reg1;
   uint64_t                              d_shift_reg2;

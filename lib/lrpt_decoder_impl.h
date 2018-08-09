@@ -23,6 +23,7 @@
 
 #include <satnogs/lrpt_decoder.h>
 #include <satnogs/convolutional_deinterleaver.h>
+#include <satnogs/whitening.h>
 
 namespace gr
 {
@@ -39,13 +40,20 @@ public:
 private:
   const size_t                  d_cadu_len;
   const size_t                  d_coded_cadu_len;
-  convolutional_deinterleaver   d_conv_deinterl;
+  const size_t                  d_mpdu_max_len;
+  whitening                     d_scrambler;
+  bool                          d_have_mpdu;
+
   uint8_t                       *d_coded_cadu_syms;
   uint8_t                       *d_cadu;
+  uint8_t                       *d_mpdu;
   void                          *d_vt;
 
   void
   decode(pmt::pmt_t m);
+
+  void
+  decode_ccsds_packet(const uint8_t *cvcdu);
 };
 
 } // namespace satnogs

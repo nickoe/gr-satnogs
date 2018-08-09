@@ -58,12 +58,18 @@ lrpt_sync_impl::lrpt_sync_impl (size_t threshold) :
                     */
                    d_window((72 + 8)/2),
                    /* Each CADU has the 4 byte ASM and a VCDU of 1020 bytes*/
-                   d_coded_cadu_len(1020 * 2 + 4*2),
+                   /*
+                    * NOTE:
+                    * Metop violates the standard as many times as possible...
+                    * The frame should contain 128 RS check symbols at the end.
+                    * For some unknown reasons, it seems that the RS encoding is not performed.
+                    * Thus, they dropped the check symbols at the end of the frame.
+                    */
+                   d_coded_cadu_len(1020 * 2 + 4*2 - 128 * 2),
                    d_frame_sync(false),
                    d_received(0),
-                   d_rotate(1, 0),
+                   d_rotate(1.0, 0.0),
                    d_qpsk(digital::constellation_qpsk::make()),
-                   d_conv_deinter(36, 2048),
                    d_shift_reg0(0x0),
                    d_shift_reg1(0x0),
                    d_shift_reg2(0x0),
@@ -72,25 +78,29 @@ lrpt_sync_impl::lrpt_sync_impl (size_t threshold) :
   set_output_multiple(d_window);
   const int alignment_multiple = volk_get_alignment () / sizeof(gr_complex);
   set_alignment (std::max (1, alignment_multiple));
-  d_rotate_pi2 = (gr_complex *)volk_malloc(d_window, volk_get_alignment ());
+  d_rotate_pi2 = (gr_complex *) volk_malloc (d_window * sizeof(gr_complex),
+                                             volk_get_alignment ());
   if(!d_rotate_pi2) {
     throw std::runtime_error("lrpt_sync: Could not allocate memory");
   }
 
-  d_rotate_2pi2 = (gr_complex *)volk_malloc(d_window, volk_get_alignment ());
+  d_rotate_2pi2 = (gr_complex *) volk_malloc (d_window * sizeof(gr_complex),
+                                              volk_get_alignment ());
   if(!d_rotate_2pi2) {
     volk_free(d_rotate_pi2);
     throw std::runtime_error("lrpt_sync: Could not allocate memory");
   }
 
-  d_rotate_3pi2 = (gr_complex *)volk_malloc(d_window, volk_get_alignment ());
+  d_rotate_3pi2 = (gr_complex *) volk_malloc (d_window * sizeof(gr_complex),
+                                              volk_get_alignment ());
   if(!d_rotate_3pi2) {
     volk_free(d_rotate_pi2);
     volk_free(d_rotate_2pi2);
     throw std::runtime_error("lrpt_sync: Could not allocate memory");
   }
 
-  d_corrected = (gr_complex *)volk_malloc(d_window, volk_get_alignment ());
+  d_corrected = (gr_complex *)volk_malloc(d_window * sizeof(gr_complex),
+                                          volk_get_alignment ());
   if(!d_corrected) {
     volk_free(d_rotate_pi2);
     volk_free(d_rotate_2pi2);
@@ -98,7 +108,7 @@ lrpt_sync_impl::lrpt_sync_impl (size_t threshold) :
     throw std::runtime_error("lrpt_sync: Could not allocate memory");
   }
 
-  uint64_t asm_coded = reverse_uint64_bytes(d_asm_coded);
+  uint64_t asm_coded = htonll(d_asm_coded);
   d_coded_cadu = new uint8_t[d_coded_cadu_len];
   memcpy(d_coded_cadu, &asm_coded, sizeof(uint64_t));
   d_received =  sizeof(uint64_t);
@@ -133,11 +143,11 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
   int multiple = noutput_items / d_window;
   for(int i = 0; i < multiple; i++) {
     volk_32fc_s32fc_multiply_32fc(d_rotate_pi2, in + i * d_window,
-                                  gr_complex(0, 1), d_window);
+                                  gr_complex(0.0, 1.0), d_window);
     volk_32fc_s32fc_multiply_32fc(d_rotate_2pi2, in + i * d_window,
-                                  gr_complex(-1, 0), d_window);
+                                  gr_complex(-1.0, 0.0), d_window);
     volk_32fc_s32fc_multiply_32fc(d_rotate_3pi2, in + i * d_window,
-                                  gr_complex(0, -1), d_window);
+                                  gr_complex(0.0, -1.0), d_window);
     /*
      * Search for the sync pattern, rotating the QPSK constellation on
      * all possible positions
@@ -147,9 +157,11 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
       //bits = (d_conv_deinter.decode_bit(bits >> 1) << 1) | d_conv_deinter.decode_bit(bits & 0x1);
       d_shift_reg0 = (d_shift_reg0 << 2) | bits;
       if(found_sync(d_shift_reg0)) {
-        d_rotate = gr_complex(1.0, 0);
+        d_rotate = gr_complex(1.0, 0.0);
         d_frame_sync = true;
-        return i * d_window + j;
+        uint64_t asm_coded = htonll(d_shift_reg0);
+        memcpy(d_coded_cadu, &asm_coded, sizeof(uint64_t));
+        return i * d_window + j + 1;
       }
 
       bits = d_qpsk->decision_maker(d_rotate_pi2 + j);
@@ -158,16 +170,20 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
       if(found_sync(d_shift_reg1)) {
         d_rotate = gr_complex(0.0, 1.0);
         d_frame_sync = true;
-        return i * d_window + j;
+        uint64_t asm_coded = htonll(d_shift_reg1);
+        memcpy(d_coded_cadu, &asm_coded, sizeof(uint64_t));
+        return i * d_window + j + 1;
       }
 
       bits = d_qpsk->decision_maker(d_rotate_2pi2 + j);
       //bits = (d_conv_deinter.decode_bit(bits >> 1) << 1) | d_conv_deinter.decode_bit(bits & 0x1);
       d_shift_reg2 = (d_shift_reg2 << 2) | bits;
       if(found_sync(d_shift_reg2)) {
-        d_rotate = gr_complex(-1.0, 0);
+        d_rotate = gr_complex(-1.0, 0.0);
         d_frame_sync = true;
-        return i * d_window + j;
+        uint64_t asm_coded = htonll(d_shift_reg2);
+        memcpy(d_coded_cadu, &asm_coded, sizeof(uint64_t));
+        return i * d_window + j + 1;
       }
 
       bits = d_qpsk->decision_maker(d_rotate_3pi2 + j);
@@ -176,7 +192,9 @@ lrpt_sync_impl::work_no_sync(const gr_complex *in, int noutput_items)
       if(found_sync(d_shift_reg3)) {
         d_rotate = gr_complex(0.0, -1.0);
         d_frame_sync = true;
-        return i * d_window + j;
+        uint64_t asm_coded = htonll(d_shift_reg3);
+        memcpy(d_coded_cadu, &asm_coded, sizeof(uint64_t));
+        return i * d_window + j + 1;
       }
     }
   }
@@ -200,7 +218,6 @@ lrpt_sync_impl::work_sync(const gr_complex *in, int noutput_items)
 
       d_coded_cadu[d_received++] = b;
       if(d_received == d_coded_cadu_len) {
-        LOG_ERROR("frame");
         d_received = sizeof(uint64_t);
         d_frame_sync = false;
         message_port_pub (pmt::mp ("cadu"),
