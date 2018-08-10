@@ -59,8 +59,22 @@ hw_rx_settings = {'usrpb200' : {'rf_gain' : 50.0, 'if_gain' : 0.0,
 not_set_rx_rf_gain = -1.0
 not_set_rx_if_gain = -1.0
 not_set_rx_bb_gain = -1.0
+not_set_samp_rate_rx = -1.0
 not_set_antenna = ''
 not_set_dev_args = ''
+
+def handle_samp_rate_rx(device, samp_rate):
+    """
+    Handles the RX sampling rate.
+    :param device: the device name 
+    :type device: string
+    :param gain: the user defined gain value
+    :type gain: float
+    """
+    if(samp_rate == not_set_samp_rate_rx):
+        return hw_rx_settings[device]['samp_rate']
+    else:
+        return samp_rate
 
 def handle_rx_dev_args(device, dev_args):
     """
