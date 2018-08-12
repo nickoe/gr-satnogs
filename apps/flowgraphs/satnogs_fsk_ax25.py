@@ -5,7 +5,7 @@
 # Title: satnogs_fsk_ax25
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: Generic FSK AX.25 decoder
-# Generated: Sun Aug 12 20:18:59 2018
+# Generated: Sun Aug 12 21:37:30 2018
 ##################################################
 
 from gnuradio import analog
@@ -25,7 +25,7 @@ import time
 
 class satnogs_fsk_ax25(gr.top_block):
 
-    def __init__(self, antenna=satnogs.not_set_antenna, baudrate=9600.0, bb_gain=satnogs.not_set_rx_bb_gain, dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=1000, enable_iq_dump=0, file_path='test.wav', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', samp_rate_rx=satnogs.not_set_samp_rate_rx, udp_IP='127.0.0.1', udp_port=16887, waterfall_file_path='/tmp/waterfall.dat', decoded_data_file_path='/tmp/.satnogs/data/data'):
+    def __init__(self, antenna=satnogs.not_set_antenna, baudrate=9600.0, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=1000, enable_iq_dump=0, file_path='test.wav', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', samp_rate_rx=satnogs.not_set_samp_rate_rx, udp_IP='127.0.0.1', udp_port=16887, waterfall_file_path='/tmp/waterfall.dat'):
         gr.top_block.__init__(self, "satnogs_fsk_ax25")
 
         ##################################################
@@ -34,6 +34,7 @@ class satnogs_fsk_ax25(gr.top_block):
         self.antenna = antenna
         self.baudrate = baudrate
         self.bb_gain = bb_gain
+        self.decoded_data_file_path = decoded_data_file_path
         self.dev_args = dev_args
         self.doppler_correction_per_sec = doppler_correction_per_sec
         self.enable_iq_dump = enable_iq_dump
@@ -50,7 +51,6 @@ class satnogs_fsk_ax25(gr.top_block):
         self.udp_IP = udp_IP
         self.udp_port = udp_port
         self.waterfall_file_path = waterfall_file_path
-        self.decoded_data_file_path = decoded_data_file_path
 
         ##################################################
         # Variables
@@ -122,10 +122,10 @@ class satnogs_fsk_ax25(gr.top_block):
         self.connect((self.osmosdr_source_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.satnogs_iq_sink_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.analog_quadrature_demod_cf_0_0_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.satnogs_iq_sink_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.satnogs_quad_demod_filter_ff_0, 0), (self.digital_binary_slicer_fb_0, 0))
 
     def get_antenna(self):
@@ -148,6 +148,12 @@ class satnogs_fsk_ax25(gr.top_block):
     def set_bb_gain(self, bb_gain):
         self.bb_gain = bb_gain
         self.osmosdr_source_0.set_bb_gain(satnogs.handle_rx_bb_gain(self.rx_sdr_device, self.bb_gain), 0)
+
+    def get_decoded_data_file_path(self):
+        return self.decoded_data_file_path
+
+    def set_decoded_data_file_path(self, decoded_data_file_path):
+        self.decoded_data_file_path = decoded_data_file_path
 
     def get_dev_args(self):
         return self.dev_args
@@ -261,12 +267,6 @@ class satnogs_fsk_ax25(gr.top_block):
     def set_waterfall_file_path(self, waterfall_file_path):
         self.waterfall_file_path = waterfall_file_path
 
-    def get_decoded_data_file_path(self):
-        return self.decoded_data_file_path
-
-    def set_decoded_data_file_path(self, decoded_data_file_path):
-        self.decoded_data_file_path = decoded_data_file_path
-
     def get_audio_samp_rate(self):
         return self.audio_samp_rate
 
@@ -288,6 +288,9 @@ def argument_parser():
     parser.add_option(
         "", "--bb-gain", dest="bb_gain", type="eng_float", default=eng_notation.num_to_str(satnogs.not_set_rx_bb_gain),
         help="Set bb_gain [default=%default]")
+    parser.add_option(
+        "", "--decoded-data-file-path", dest="decoded_data_file_path", type="string", default='/tmp/.satnogs/data/data',
+        help="Set decoded_data_file_path [default=%default]")
     parser.add_option(
         "", "--dev-args", dest="dev_args", type="string", default=satnogs.not_set_dev_args,
         help="Set dev_args [default=%default]")
@@ -336,9 +339,6 @@ def argument_parser():
     parser.add_option(
         "", "--waterfall-file-path", dest="waterfall_file_path", type="string", default='/tmp/waterfall.dat',
         help="Set waterfall_file_path [default=%default]")
-    parser.add_option(
-        "", "--decoded-data-file-path", dest="decoded_data_file_path", type="string", default='/tmp/.satnogs/data/data',
-        help="Set decoded_data_file_path [default=%default]")
     return parser
 
 
@@ -346,7 +346,7 @@ def main(top_block_cls=satnogs_fsk_ax25, options=None):
     if options is None:
         options, _ = argument_parser().parse_args()
 
-    tb = top_block_cls(antenna=options.antenna, baudrate=options.baudrate, bb_gain=options.bb_gain, dev_args=options.dev_args, doppler_correction_per_sec=options.doppler_correction_per_sec, enable_iq_dump=options.enable_iq_dump, file_path=options.file_path, if_gain=options.if_gain, iq_file_path=options.iq_file_path, lo_offset=options.lo_offset, ppm=options.ppm, rf_gain=options.rf_gain, rigctl_port=options.rigctl_port, rx_freq=options.rx_freq, rx_sdr_device=options.rx_sdr_device, samp_rate_rx=options.samp_rate_rx, udp_IP=options.udp_IP, udp_port=options.udp_port, waterfall_file_path=options.waterfall_file_path, decoded_data_file_path=options.decoded_data_file_path)
+    tb = top_block_cls(antenna=options.antenna, baudrate=options.baudrate, bb_gain=options.bb_gain, decoded_data_file_path=options.decoded_data_file_path, dev_args=options.dev_args, doppler_correction_per_sec=options.doppler_correction_per_sec, enable_iq_dump=options.enable_iq_dump, file_path=options.file_path, if_gain=options.if_gain, iq_file_path=options.iq_file_path, lo_offset=options.lo_offset, ppm=options.ppm, rf_gain=options.rf_gain, rigctl_port=options.rigctl_port, rx_freq=options.rx_freq, rx_sdr_device=options.rx_sdr_device, samp_rate_rx=options.samp_rate_rx, udp_IP=options.udp_IP, udp_port=options.udp_port, waterfall_file_path=options.waterfall_file_path)
     tb.start()
     tb.wait()
 

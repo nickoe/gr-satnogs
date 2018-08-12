@@ -5,7 +5,7 @@
 # Title: satnogs_msk_ax25
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: Generic MSK AX.25 decoder
-# Generated: Sun Aug 12 20:18:45 2018
+# Generated: Sun Aug 12 21:38:22 2018
 ##################################################
 
 from gnuradio import analog
@@ -122,10 +122,10 @@ class satnogs_msk_ax25(gr.top_block):
         self.connect((self.osmosdr_source_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.satnogs_iq_sink_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.analog_quadrature_demod_cf_0_0_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.satnogs_iq_sink_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.satnogs_quad_demod_filter_ff_0, 0), (self.digital_binary_slicer_fb_0, 0))
 
     def get_antenna(self):
