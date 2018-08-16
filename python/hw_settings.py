@@ -68,8 +68,8 @@ def handle_samp_rate_rx(device, samp_rate):
     Handles the RX sampling rate.
     :param device: the device name 
     :type device: string
-    :param gain: the user defined gain value
-    :type gain: float
+    :param samp_rate: the user defined RX sampling rate value
+    :type samp_rate: float
     """
     if(samp_rate == not_set_samp_rate_rx):
         return hw_rx_settings[device]['samp_rate']
