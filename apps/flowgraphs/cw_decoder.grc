@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<?grc format='1' created='3.7.12'?>
+<?grc format='1' created='3.7.13'?>
 <flow_graph>
   <timestamp>Thu May  5 00:22:45 2016</timestamp>
   <block>
@@ -114,88 +114,6 @@
     <param>
       <key>value</key>
       <value>48000</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>comment</key>
-      <value>SDR device 
-TX sampling rate</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(231, 547)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>samp_rate_rx</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>satnogs.hw_rx_settings[rx_sdr_device]['samp_rate']</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(23, 547)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>xlate_filter_taps</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>firdes.low_pass(1, samp_rate_rx, 125000, 25000, firdes.WIN_HAMMING, 6.76)</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(446, 546)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>xlating_decimation</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>int(samp_rate_rx/100e3)</value>
     </param>
   </block>
   <block>
@@ -715,6 +633,49 @@ tone. This tone is typically 1 kHz.</value>
     </param>
   </block>
   <block>
+    <key>blocks_rotator_cc</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(240, 364)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_rotator_cc_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>phase_inc</key>
+      <value>-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx))</value>
+    </param>
+  </block>
+  <block>
     <key>parameter</key>
     <param>
       <key>alias</key>
@@ -947,65 +908,6 @@ tone. This tone is typically 1 kHz.</value>
     <param>
       <key>value</key>
       <value>test.txt</value>
-    </param>
-  </block>
-  <block>
-    <key>freq_xlating_fir_filter_xxx</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>center_freq</key>
-      <value>lo_offset</value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value>Output samplerate: 500k / 5 = 100k</value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>decim</key>
-      <value>xlating_decimation</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(287, 379)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>freq_xlating_fir_filter_xxx_0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>samp_rate</key>
-      <value>samp_rate_rx</value>
-    </param>
-    <param>
-      <key>taps</key>
-      <value>xlate_filter_taps</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>ccc</value>
     </param>
   </block>
   <block>
@@ -1378,7 +1280,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>bw0</key>
-      <value>samp_rate_rx</value>
+      <value>satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)</value>
     </param>
     <param>
       <key>dc_offset_mode0</key>
@@ -2666,7 +2568,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(15, 311)</value>
+      <value>(8, 276)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2762,7 +2664,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>sample_rate</key>
-      <value>samp_rate_rx</value>
+      <value>satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)</value>
     </param>
     <param>
       <key>sync</key>
@@ -2789,7 +2691,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(662, 227)</value>
+      <value>(520, 180)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2813,7 +2715,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>rrate</key>
-      <value>(audio_samp_rate) / (samp_rate_rx / xlating_decimation)</value>
+      <value>audio_samp_rate/satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)</value>
     </param>
     <param>
       <key>samp_delay</key>
@@ -2821,7 +2723,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>atten</key>
-      <value>80</value>
+      <value>100</value>
     </param>
     <param>
       <key>taps</key>
@@ -3068,6 +2970,53 @@ we shift the LO a little further</value>
     </param>
   </block>
   <block>
+    <key>parameter</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(32, 852)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>samp_rate_rx</value>
+    </param>
+    <param>
+      <key>label</key>
+      <value></value>
+    </param>
+    <param>
+      <key>short_id</key>
+      <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>eng_float</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>satnogs.not_set_samp_rate_rx</value>
+    </param>
+  </block>
+  <block>
     <key>satnogs_coarse_doppler_correction_cc</key>
     <param>
       <key>alias</key>
@@ -3075,7 +3024,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>comment</key>
-      <value>Output samplerate: 500k</value>
+      <value></value>
     </param>
     <param>
       <key>affinity</key>
@@ -3083,11 +3032,11 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>True</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(446, 239)</value>
+      <value>(288, 192)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3107,7 +3056,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>sampling_rate</key>
-      <value>samp_rate_rx / xlating_decimation</value>
+      <value>satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)</value>
     </param>
     <param>
       <key>target_freq</key>
@@ -3365,7 +3314,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(16, 204)</value>
+      <value>(8, 140)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3401,7 +3350,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>interval</key>
-      <value>50</value>
+      <value>1000</value>
     </param>
   </block>
   <block>
@@ -3733,7 +3682,7 @@ we shift the LO a little further</value>
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>freq_xlating_fir_filter_xxx_0</source_block_id>
+    <source_block_id>blocks_rotator_cc_0</source_block_id>
     <sink_block_id>satnogs_coarse_doppler_correction_cc_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
@@ -3758,7 +3707,7 @@ we shift the LO a little further</value>
   </connection>
   <connection>
     <source_block_id>osmosdr_source_0</source_block_id>
-    <sink_block_id>freq_xlating_fir_filter_xxx_0</sink_block_id>
+    <sink_block_id>blocks_rotator_cc_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
