@@ -5,8 +5,9 @@
 # Title: AMSAT FOX DUV Decoder
 # Author: Thanos Giolias (agiolias@csd.uoc.gr), Nikos Karamolegos (karamolegkos.n@gmail.com), Manolis Surligas (surligas@gmail.com)
 # Description: A DUV Decoder for the AMSAT FOX satellites
-# Generated: Sun Aug 19 21:41:34 2018
+# Generated: Wed Sep  5 12:05:57 2018
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -26,7 +27,7 @@ import time
 
 class satnogs_amsat_fox_duv_decoder(gr.top_block):
 
-    def __init__(self, antenna=satnogs.not_set_antenna, baudrate=9600.0, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=20, enable_iq_dump=0, file_path='test.ogg', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', samp_rate_rx=satnogs.not_set_samp_rate_rx, udp_port=16887, waterfall_file_path='/tmp/waterfall.dat'):
+    def __init__(self, antenna=satnogs.not_set_antenna, baudrate=9600.0, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=20, enable_iq_dump=0, file_path='test.ogg', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', samp_rate_rx=satnogs.not_set_samp_rate_rx, udp_IP='127.0.0.1', udp_port=16887, waterfall_file_path='/tmp/waterfall.dat'):
         gr.top_block.__init__(self, "AMSAT FOX DUV Decoder")
 
         ##################################################
@@ -49,6 +50,7 @@ class satnogs_amsat_fox_duv_decoder(gr.top_block):
         self.rx_freq = rx_freq
         self.rx_sdr_device = rx_sdr_device
         self.samp_rate_rx = samp_rate_rx
+        self.udp_IP = udp_IP
         self.udp_port = udp_port
         self.waterfall_file_path = waterfall_file_path
 
@@ -63,7 +65,7 @@ class satnogs_amsat_fox_duv_decoder(gr.top_block):
         # Blocks
         ##################################################
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
-        self.satnogs_udp_msg_sink_0_0 = satnogs.udp_msg_sink('udp_IP', udp_port, 1500)
+        self.satnogs_udp_msg_sink_0_0 = satnogs.udp_msg_sink(udp_IP, udp_port, 1500)
         self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000, 1500)
         self.satnogs_quad_demod_filter_ff_0 = satnogs.quad_demod_filter_ff(1.2)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
@@ -105,8 +107,6 @@ class satnogs_amsat_fox_duv_decoder(gr.top_block):
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)))
         self.analog_quadrature_demod_cf_0_0 = analog.quadrature_demod_cf(1.2)
         self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf(1.0)
-
-
 
         ##################################################
         # Connections
@@ -256,6 +256,12 @@ class satnogs_amsat_fox_duv_decoder(gr.top_block):
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx), 0)
         self.blocks_rotator_cc_0.set_phase_inc(-2.0 * math.pi * (self.lo_offset / satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx)))
 
+    def get_udp_IP(self):
+        return self.udp_IP
+
+    def set_udp_IP(self, udp_IP):
+        self.udp_IP = udp_IP
+
     def get_udp_port(self):
         return self.udp_port
 
@@ -348,6 +354,9 @@ def argument_parser():
         "", "--samp-rate-rx", dest="samp_rate_rx", type="eng_float", default=eng_notation.num_to_str(satnogs.not_set_samp_rate_rx),
         help="Set samp_rate_rx [default=%default]")
     parser.add_option(
+        "", "--udp-IP", dest="udp_IP", type="string", default='127.0.0.1',
+        help="Set udp_IP [default=%default]")
+    parser.add_option(
         "", "--udp-port", dest="udp_port", type="intx", default=16887,
         help="Set udp_port [default=%default]")
     parser.add_option(
@@ -360,7 +369,7 @@ def main(top_block_cls=satnogs_amsat_fox_duv_decoder, options=None):
     if options is None:
         options, _ = argument_parser().parse_args()
 
-    tb = top_block_cls(antenna=options.antenna, baudrate=options.baudrate, bb_gain=options.bb_gain, decoded_data_file_path=options.decoded_data_file_path, dev_args=options.dev_args, doppler_correction_per_sec=options.doppler_correction_per_sec, enable_iq_dump=options.enable_iq_dump, file_path=options.file_path, if_gain=options.if_gain, iq_file_path=options.iq_file_path, lo_offset=options.lo_offset, ppm=options.ppm, rf_gain=options.rf_gain, rigctl_port=options.rigctl_port, rx_freq=options.rx_freq, rx_sdr_device=options.rx_sdr_device, samp_rate_rx=options.samp_rate_rx, udp_port=options.udp_port, waterfall_file_path=options.waterfall_file_path)
+    tb = top_block_cls(antenna=options.antenna, baudrate=options.baudrate, bb_gain=options.bb_gain, decoded_data_file_path=options.decoded_data_file_path, dev_args=options.dev_args, doppler_correction_per_sec=options.doppler_correction_per_sec, enable_iq_dump=options.enable_iq_dump, file_path=options.file_path, if_gain=options.if_gain, iq_file_path=options.iq_file_path, lo_offset=options.lo_offset, ppm=options.ppm, rf_gain=options.rf_gain, rigctl_port=options.rigctl_port, rx_freq=options.rx_freq, rx_sdr_device=options.rx_sdr_device, samp_rate_rx=options.samp_rate_rx, udp_IP=options.udp_IP, udp_port=options.udp_port, waterfall_file_path=options.waterfall_file_path)
     tb.start()
     tb.wait()
 
