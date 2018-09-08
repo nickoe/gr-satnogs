@@ -320,12 +320,12 @@ namespace gr
     double
     tcp_rigctl_msg_source_impl::get_freq_from_buf (const uint8_t* buf)
     {
-      long int f;
+      long long int f;
       char *end;
       f = strtol ((char *) buf, &end, 10);
 
       /* Check for various possible errors */
-      if ((errno == ERANGE && (f == LONG_MAX || f == LONG_MIN))
+      if ((errno == ERANGE && (f == LLONG_MAX || f == LLONG_MIN))
           || (errno != 0 && f == 0)) {
         LOG_WARN("Invalid rigctl command");
         f = 0;
