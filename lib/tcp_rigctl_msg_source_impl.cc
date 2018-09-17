@@ -322,7 +322,7 @@ namespace gr
     {
       long long int f;
       char *end;
-      f = strtol ((char *) buf, &end, 10);
+      f = strtoll ((char *) buf, &end, 10);
 
       /* Check for various possible errors */
       if ((errno == ERANGE && (f == LLONG_MAX || f == LLONG_MIN))
