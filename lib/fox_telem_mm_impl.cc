@@ -33,11 +33,14 @@ namespace gr {
     /**
      * AMSAT FOX spacecraft IDs
      */
-      const uint8_t fox_telem_mm_impl::fox_id[] = {0x1 /* FOX-1A */,
-						   0x2 /* FOX-1B */,
-						   0x3 /* FOX-1C */,
-						   0x4 /* FOX-1D */,
-						   0x5 /* FOX-1E */};
+const uint8_t fox_telem_mm_impl::fox_id[] =
+      {
+          0x1 /* FOX-1A */,
+          0x2 /* FOX-1B */,
+          0x3 /* FOX-1C */,
+          0x4 /* FOX-1D */,
+          0x5 /* FOX-1E */
+      };
 
     fox_telem_mm::sptr
     fox_telem_mm::make()
