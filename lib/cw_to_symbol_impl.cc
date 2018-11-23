@@ -2,7 +2,7 @@
 /*
  * gr-satnogs: SatNOGS GNU Radio Out-Of-Tree Module
  *
- *  Copyright (C) 2016,2017
+ *  Copyright (C) 2016-2018
  *  Libre Space Foundation <http://librespacefoundation.org/>
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -23,12 +23,18 @@
 #include "config.h"
 #endif
 
+#include "cw_to_symbol_impl.h"
+
 #include <limits>
 #include <gnuradio/io_signature.h>
 #include <satnogs/log.h>
 #include <satnogs/utils.h>
-#include <boost/math/common_factor.hpp>
-#include "cw_to_symbol_impl.h"
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 106500
+  #include <boost/integer/common_factor.hpp>
+#else
+  #include <boost/math/common_factor.hpp>
+#endif
 #include <volk/volk.h>
 
 namespace gr
