@@ -21,7 +21,6 @@ include(GrPython)
 
 GR_PYTHON_INSTALL(
     PROGRAMS
-    upsat_transceiver_cli.py
     satnogs_amsat_fox_duv_decoder.py
     satnogs_noaa_apt_decoder.py
     satnogs_meteor_decoder.py

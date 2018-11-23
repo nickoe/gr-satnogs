@@ -142,12 +142,6 @@ option(INCLUDE_DEBUG_BLOCKS
 ########################################################################
 # Find gr-satnogs external build dependencies
 ########################################################################
-if(${INCLUDE_DEBUG_BLOCKS})
-    find_package(Nova)
-    if(NOT NOVA_FOUND)
-        message(FATAL_ERROR "libnova required to compile satnogs")
-    endif()
-endif()
 
 ########################################################################
 # Search for the libfec if it is already installed in the system

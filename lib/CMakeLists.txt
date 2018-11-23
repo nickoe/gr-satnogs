@@ -38,7 +38,6 @@ list(APPEND satnogs_debug_sources
     morse_debug_source_impl.cc
     debug_msg_source_impl.cc
     debug_msg_source_raw_impl.cc
-    leo_channel_impl.cc
     cw_encoder_impl.cc
 )
 list(APPEND satnogs_sources
@@ -94,7 +93,6 @@ target_link_libraries(gnuradio-satnogs
     gnuradio-blocks
     gnuradio-digital
     ${CMAKE_THREAD_LIBS_INIT}
-    ${NOVA_LIBRARIES}
     ${VOLK_LIBRARIES}
     ${OGGVORBIS_LIBRARIES}
     ${PNG_LIBRARIES}
