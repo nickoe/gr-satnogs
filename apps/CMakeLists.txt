@@ -36,5 +36,6 @@ GR_PYTHON_INSTALL(
     flowgraphs/satnogs_example_flowgraph.py
     flowgraphs/satnogs_fsk_ax25.py
     flowgraphs/satnogs_msk_ax25.py
+    flowgraphs/satnogs_bpsk_ax25.py
     DESTINATION bin
 )
