@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: AFSK1200 AX.25 decoder
+# Title: AFSK1200 AX.25 decoder 
 # Author: Manolis Surligas (surligas@gmail.com), Vardakis Giorgos (vardakis.grg@gmail.com)
 # Description: AFSK1200 AX.25 decoder
-# Generated: Sun Aug 19 21:49:02 2018
+# Generated: Sat Nov 24 21:47:09 2018
 ##################################################
 
 from gnuradio import analog
@@ -62,7 +62,6 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.deviation = deviation = 5000
         self.baud_rate = baud_rate = 1200
         self.audio_samp_rate = audio_samp_rate = 48000
-        self.audio_gain = audio_gain = satnogs.fm_demod_settings[rx_sdr_device]['audio_gain']
 
         ##################################################
         # Blocks
@@ -259,7 +258,6 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.osmosdr_source_0.set_antenna(satnogs.handle_rx_antenna(self.rx_sdr_device, self.antenna), 0)
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx), 0)
         self.blocks_rotator_cc_0.set_phase_inc(-2.0 * math.pi * (self.lo_offset / satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx)))
-        self.set_audio_gain(satnogs.fm_demod_settings[self.rx_sdr_device]['audio_gain'])
 
     def get_samp_rate_rx(self):
         return self.samp_rate_rx
@@ -330,12 +328,6 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.analog_sig_source_x_0.set_sampling_freq(self.audio_samp_rate)
         self.analog_quadrature_demod_cf_0_0.set_gain((2*math.pi*self.deviation)/self.audio_samp_rate)
         self.analog_quadrature_demod_cf_0.set_gain(((self.audio_samp_rate/10) / self.baud_rate)/(math.pi*1))
-
-    def get_audio_gain(self):
-        return self.audio_gain
-
-    def set_audio_gain(self, audio_gain):
-        self.audio_gain = audio_gain
 
 
 def argument_parser():

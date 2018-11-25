@@ -5,7 +5,7 @@
 # Title: FSK9600 AX.25 decoder with G3RUH support
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: FSK9600 AX.25 decoder with G3RUH support
-# Generated: Sun Mar 25 17:48:09 2018
+# Generated: Sat Nov 24 21:42:53 2018
 ##################################################
 
 from gnuradio import analog
@@ -62,7 +62,6 @@ class satnogs_fsk9600_g3ruh_ax25(gr.top_block):
         self.modulation_index = modulation_index = deviation / (baud_rate / 2.0)
         self.filter_rate = filter_rate = 250000
         self.audio_samp_rate = audio_samp_rate = 48000
-        self.audio_gain = audio_gain = satnogs.fm_demod_settings[rx_sdr_device]['audio_gain']
 
         ##################################################
         # Blocks
@@ -228,7 +227,6 @@ class satnogs_fsk9600_g3ruh_ax25(gr.top_block):
         self.osmosdr_source_0.set_if_gain(satnogs.handle_rx_if_gain(self.rx_sdr_device, self.if_gain), 0)
         self.osmosdr_source_0.set_bb_gain(satnogs.handle_rx_bb_gain(self.rx_sdr_device, self.bb_gain), 0)
         self.osmosdr_source_0.set_antenna(satnogs.handle_rx_antenna(self.rx_sdr_device, self.antenna), 0)
-        self.set_audio_gain(satnogs.fm_demod_settings[self.rx_sdr_device]['audio_gain'])
 
     def get_udp_IP(self):
         return self.udp_IP
@@ -305,12 +303,6 @@ class satnogs_fsk9600_g3ruh_ax25(gr.top_block):
         self.audio_samp_rate = audio_samp_rate
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, 7850, self.audio_samp_rate * 0.15, firdes.WIN_HAMMING, 6.76))
         self.analog_quadrature_demod_cf_0_0.set_gain(((self.audio_samp_rate) / self.baud_rate)/(math.pi*self.modulation_index))
-
-    def get_audio_gain(self):
-        return self.audio_gain
-
-    def set_audio_gain(self, audio_gain):
-        self.audio_gain = audio_gain
 
 
 def argument_parser():
