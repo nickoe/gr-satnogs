@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: AFSK1200 AX.25 decoder 
+# Title: AFSK1200 AX.25 decoder
 # Author: Manolis Surligas (surligas@gmail.com), Vardakis Giorgos (vardakis.grg@gmail.com)
 # Description: AFSK1200 AX.25 decoder
-# Generated: Sat Nov 24 21:47:09 2018
+# Generated: Sun Nov 25 23:43:12 2018
 ##################################################
 
 from gnuradio import analog
@@ -96,7 +96,7 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx), 0)
 
         self.low_pass_filter_1 = filter.fir_filter_ccf(10, firdes.low_pass(
-        	1, audio_samp_rate, (mark_frequency - space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
+        	10, audio_samp_rate, (mark_frequency - space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
         self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
         	1, audio_samp_rate, deviation+max_modulation_freq, 3000, firdes.WIN_HAMMING, 6.76))
         self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff((48e3/10)/baud_rate, 0.25*0.175*0.175, 0.5, 0.175, 0.005)
@@ -215,7 +215,7 @@ class satnogs_afsk1200_ax25(gr.top_block):
 
     def set_mark_frequency(self, mark_frequency):
         self.mark_frequency = mark_frequency
-        self.low_pass_filter_1.set_taps(firdes.low_pass(1, self.audio_samp_rate, (self.mark_frequency - self.space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(10, self.audio_samp_rate, (self.mark_frequency - self.space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
 
     def get_ppm(self):
         return self.ppm
@@ -274,7 +274,7 @@ class satnogs_afsk1200_ax25(gr.top_block):
 
     def set_space_frequency(self, space_frequency):
         self.space_frequency = space_frequency
-        self.low_pass_filter_1.set_taps(firdes.low_pass(1, self.audio_samp_rate, (self.mark_frequency - self.space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(10, self.audio_samp_rate, (self.mark_frequency - self.space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
 
     def get_udp_IP(self):
         return self.udp_IP
@@ -323,7 +323,7 @@ class satnogs_afsk1200_ax25(gr.top_block):
     def set_audio_samp_rate(self, audio_samp_rate):
         self.audio_samp_rate = audio_samp_rate
         self.pfb_arb_resampler_xxx_0.set_rate(self.audio_samp_rate/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
-        self.low_pass_filter_1.set_taps(firdes.low_pass(1, self.audio_samp_rate, (self.mark_frequency - self.space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(10, self.audio_samp_rate, (self.mark_frequency - self.space_frequency)/2.0, 1000, firdes.WIN_HAMMING, 6.76))
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, self.deviation+self.max_modulation_freq, 3000, firdes.WIN_HAMMING, 6.76))
         self.analog_sig_source_x_0.set_sampling_freq(self.audio_samp_rate)
         self.analog_quadrature_demod_cf_0_0.set_gain((2*math.pi*self.deviation)/self.audio_samp_rate)
