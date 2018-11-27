@@ -5,12 +5,14 @@
 # Title: satnogs_bpsk_ax25
 # Author: Manolis Surligas (surligas@gmail.com), Patrick Dohmen (DL4PD)
 # Description: BPSK AX.25 decoder
-# Generated: Sat Nov 24 23:25:36 2018
+# Generated: Tue Nov 27 16:45:38 2018
 ##################################################
 
+from gnuradio import analog
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import eng_notation
+from gnuradio import filter
 from gnuradio import gr
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
@@ -24,7 +26,7 @@ import time
 
 class satnogs_bpsk_ax25(gr.top_block):
 
-    def __init__(self, antenna=satnogs.not_set_antenna, baudrate=9600.0, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=1000, enable_iq_dump=0, file_path='test.wav', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', samp_rate_rx=satnogs.not_set_samp_rate_rx, udp_IP='127.0.0.1', udp_port=16887, waterfall_file_path='/tmp/waterfall.dat'):
+    def __init__(self, antenna=satnogs.not_set_antenna, baudrate=9600.0, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=1000, enable_iq_dump=0, file_path='test.wav', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', samp_rate_rx=satnogs.not_set_samp_rate_rx, udp_IP='127.0.0.1', udp_port=16887, waterfall_file_path='/tmp/waterfall.dat', excess_bw=0.35, max_cfo=1000.0):
         gr.top_block.__init__(self, "satnogs_bpsk_ax25")
 
         ##################################################
@@ -50,13 +52,15 @@ class satnogs_bpsk_ax25(gr.top_block):
         self.udp_IP = udp_IP
         self.udp_port = udp_port
         self.waterfall_file_path = waterfall_file_path
+        self.excess_bw = excess_bw
+        self.max_cfo = max_cfo
 
         ##################################################
         # Variables
         ##################################################
-        self.sps = sps = 2
-        self.nfilts = nfilts = 11
-        self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), 0.35, 11*sps*nfilts)
+        self.sps = sps = 4
+        self.nfilts = nfilts = 32
+        self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), excess_bw, 11*sps*nfilts)
 
         self.bpsk_constellation = bpsk_constellation = digital.constellation_bpsk().base()
 
@@ -75,7 +79,7 @@ class satnogs_bpsk_ax25(gr.top_block):
         self.satnogs_ax25_decoder_bm_0_0 = satnogs.ax25_decoder_bm('GND', 0, True, False, 1024)
         self.satnogs_ax25_decoder_bm_0 = satnogs.ax25_decoder_bm('GND', 0, True, True, 1024)
         self.pfb_arb_resampler_xxx_0_0 = pfb.arb_resampler_ccf(
-        	  (1.0 * sps*baudrate)/audio_samp_rate,
+        	  (1.0 * sps*baudrate)/satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx),
                   taps=None,
         	  flt_size=32)
         self.pfb_arb_resampler_xxx_0_0.declare_sample_delay(0)
@@ -99,15 +103,20 @@ class satnogs_bpsk_ax25(gr.top_block):
         self.osmosdr_source_0.set_antenna(satnogs.handle_rx_antenna(rx_sdr_device, antenna), 0)
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx), 0)
 
-        self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, 2.0 * math.pi / 100.0, (rrc_taps), nfilts, nfilts/2, 1.5, 1)
-        self.digital_lms_dd_equalizer_cc_1 = digital.lms_dd_equalizer_cc(11, 0.001, 1, bpsk_constellation)
-        self.digital_costas_loop_cc_0 = digital.costas_loop_cc(2.0 * math.pi / 100.0, 2, False)
-        self.digital_cma_equalizer_cc_0 = digital.cma_equalizer_cc(11, 1, 0.001, 1)
-        self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
+        self.low_pass_filter_0_0 = filter.fir_filter_ccf(1, firdes.low_pass(
+        	1, audio_samp_rate, ((1.0 + excess_bw) * baudrate/2.0) + max_cfo, baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
+        	1, sps*baudrate, ((1.0 + excess_bw) * baudrate/2.0) + max_cfo, baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
+        self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, 2.0 * math.pi/100.0, (rrc_taps), nfilts, nfilts/2, 1.5, 1)
+        self.digital_costas_loop_cc_0_0 = digital.costas_loop_cc(2.0 * math.pi / 100.0, 2, True)
+        self.digital_constellation_receiver_cb_0 = digital.constellation_receiver_cb(bpsk_constellation, 2.0 * math.pi/100.0, -0.25, 0.25)
         self.blocks_rotator_cc_0_0 = blocks.rotator_cc(2.0 * math.pi * (1200.0 / audio_samp_rate))
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)))
-        self.blocks_complex_to_real_0_0 = blocks.complex_to_real(1)
         self.blocks_complex_to_real_0 = blocks.complex_to_real(1)
+        self.analog_agc2_xx_0_0 = analog.agc2_cc(0.01, 0.001, 0.015, 1.0)
+        self.analog_agc2_xx_0_0.set_max_gain(65536)
+        self.analog_agc2_xx_0 = analog.agc2_cc(1e-3, 1e-3, 0.5, 1.0)
+        self.analog_agc2_xx_0.set_max_gain(65536)
 
 
 
@@ -119,22 +128,23 @@ class satnogs_bpsk_ax25(gr.top_block):
         self.msg_connect((self.satnogs_ax25_decoder_bm_0_0, 'pdu'), (self.satnogs_frame_file_sink_0_1_0, 'frame'))
         self.msg_connect((self.satnogs_ax25_decoder_bm_0_0, 'pdu'), (self.satnogs_udp_msg_sink_0_0, 'in'))
         self.msg_connect((self.satnogs_tcp_rigctl_msg_source_0, 'freq'), (self.satnogs_coarse_doppler_correction_cc_0, 'freq'))
+        self.connect((self.analog_agc2_xx_0, 0), (self.pfb_arb_resampler_xxx_0_0, 0))
+        self.connect((self.analog_agc2_xx_0_0, 0), (self.low_pass_filter_0_0, 0))
         self.connect((self.blocks_complex_to_real_0, 0), (self.satnogs_ogg_encoder_0, 0))
-        self.connect((self.blocks_complex_to_real_0_0, 0), (self.digital_binary_slicer_fb_0, 0))
         self.connect((self.blocks_rotator_cc_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
         self.connect((self.blocks_rotator_cc_0_0, 0), (self.blocks_complex_to_real_0, 0))
-        self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0, 0))
-        self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0_0, 0))
-        self.connect((self.digital_cma_equalizer_cc_0, 0), (self.digital_lms_dd_equalizer_cc_1, 0))
-        self.connect((self.digital_costas_loop_cc_0, 0), (self.blocks_complex_to_real_0_0, 0))
-        self.connect((self.digital_lms_dd_equalizer_cc_1, 0), (self.digital_costas_loop_cc_0, 0))
-        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_cma_equalizer_cc_0, 0))
+        self.connect((self.digital_constellation_receiver_cb_0, 0), (self.satnogs_ax25_decoder_bm_0, 0))
+        self.connect((self.digital_constellation_receiver_cb_0, 0), (self.satnogs_ax25_decoder_bm_0_0, 0))
+        self.connect((self.digital_costas_loop_cc_0_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
+        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_constellation_receiver_cb_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.digital_costas_loop_cc_0_0, 0))
+        self.connect((self.low_pass_filter_0_0, 0), (self.blocks_rotator_cc_0_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_rotator_cc_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.blocks_rotator_cc_0_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.pfb_arb_resampler_xxx_0_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.analog_agc2_xx_0_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_iq_sink_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.analog_agc2_xx_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
 
     def get_antenna(self):
@@ -149,7 +159,9 @@ class satnogs_bpsk_ax25(gr.top_block):
 
     def set_baudrate(self, baudrate):
         self.baudrate = baudrate
-        self.pfb_arb_resampler_xxx_0_0.set_rate((1.0 * self.sps*self.baudrate)/self.audio_samp_rate)
+        self.pfb_arb_resampler_xxx_0_0.set_rate((1.0 * self.sps*self.baudrate)/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
+        self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.sps*self.baudrate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
 
     def get_bb_gain(self):
         return self.bb_gain
@@ -242,6 +254,7 @@ class satnogs_bpsk_ax25(gr.top_block):
 
     def set_rx_sdr_device(self, rx_sdr_device):
         self.rx_sdr_device = rx_sdr_device
+        self.pfb_arb_resampler_xxx_0_0.set_rate((1.0 * self.sps*self.baudrate)/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
         self.pfb_arb_resampler_xxx_0.set_rate(self.audio_samp_rate/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
         self.osmosdr_source_0.set_sample_rate(satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
         self.osmosdr_source_0.set_gain(satnogs.handle_rx_rf_gain(self.rx_sdr_device, self.rf_gain), 0)
@@ -256,6 +269,7 @@ class satnogs_bpsk_ax25(gr.top_block):
 
     def set_samp_rate_rx(self, samp_rate_rx):
         self.samp_rate_rx = samp_rate_rx
+        self.pfb_arb_resampler_xxx_0_0.set_rate((1.0 * self.sps*self.baudrate)/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
         self.pfb_arb_resampler_xxx_0.set_rate(self.audio_samp_rate/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
         self.osmosdr_source_0.set_sample_rate(satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx), 0)
@@ -279,20 +293,38 @@ class satnogs_bpsk_ax25(gr.top_block):
     def set_waterfall_file_path(self, waterfall_file_path):
         self.waterfall_file_path = waterfall_file_path
 
+    def get_excess_bw(self):
+        return self.excess_bw
+
+    def set_excess_bw(self, excess_bw):
+        self.excess_bw = excess_bw
+        self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
+        self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.sps*self.baudrate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
+
+    def get_max_cfo(self):
+        return self.max_cfo
+
+    def set_max_cfo(self, max_cfo):
+        self.max_cfo = max_cfo
+        self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.sps*self.baudrate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
+
     def get_sps(self):
         return self.sps
 
     def set_sps(self, sps):
         self.sps = sps
-        self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), 0.35, 11*self.sps*self.nfilts))
-        self.pfb_arb_resampler_xxx_0_0.set_rate((1.0 * self.sps*self.baudrate)/self.audio_samp_rate)
+        self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
+        self.pfb_arb_resampler_xxx_0_0.set_rate((1.0 * self.sps*self.baudrate)/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.sps*self.baudrate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
 
     def get_nfilts(self):
         return self.nfilts
 
     def set_nfilts(self, nfilts):
         self.nfilts = nfilts
-        self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), 0.35, 11*self.sps*self.nfilts))
+        self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
 
     def get_rrc_taps(self):
         return self.rrc_taps
@@ -312,8 +344,8 @@ class satnogs_bpsk_ax25(gr.top_block):
 
     def set_audio_samp_rate(self, audio_samp_rate):
         self.audio_samp_rate = audio_samp_rate
-        self.pfb_arb_resampler_xxx_0_0.set_rate((1.0 * self.sps*self.baudrate)/self.audio_samp_rate)
         self.pfb_arb_resampler_xxx_0.set_rate(self.audio_samp_rate/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
+        self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, ((1.0 + self.excess_bw) * self.baudrate/2.0) + self.max_cfo, self.baudrate / 16.0, firdes.WIN_HAMMING, 6.76))
         self.blocks_rotator_cc_0_0.set_phase_inc(2.0 * math.pi * (1200.0 / self.audio_samp_rate))
 
 
@@ -380,6 +412,12 @@ def argument_parser():
     parser.add_option(
         "", "--waterfall-file-path", dest="waterfall_file_path", type="string", default='/tmp/waterfall.dat',
         help="Set waterfall_file_path [default=%default]")
+    parser.add_option(
+        "", "--excess-bw", dest="excess_bw", type="eng_float", default=eng_notation.num_to_str(0.35),
+        help="Set excess_bw [default=%default]")
+    parser.add_option(
+        "", "--max-cfo", dest="max_cfo", type="eng_float", default=eng_notation.num_to_str(1000.0),
+        help="Set max_cfo [default=%default]")
     return parser
 
 
@@ -387,7 +425,7 @@ def main(top_block_cls=satnogs_bpsk_ax25, options=None):
     if options is None:
         options, _ = argument_parser().parse_args()
 
-    tb = top_block_cls(antenna=options.antenna, baudrate=options.baudrate, bb_gain=options.bb_gain, decoded_data_file_path=options.decoded_data_file_path, dev_args=options.dev_args, doppler_correction_per_sec=options.doppler_correction_per_sec, enable_iq_dump=options.enable_iq_dump, file_path=options.file_path, if_gain=options.if_gain, iq_file_path=options.iq_file_path, lo_offset=options.lo_offset, ppm=options.ppm, rf_gain=options.rf_gain, rigctl_port=options.rigctl_port, rx_freq=options.rx_freq, rx_sdr_device=options.rx_sdr_device, samp_rate_rx=options.samp_rate_rx, udp_IP=options.udp_IP, udp_port=options.udp_port, waterfall_file_path=options.waterfall_file_path)
+    tb = top_block_cls(antenna=options.antenna, baudrate=options.baudrate, bb_gain=options.bb_gain, decoded_data_file_path=options.decoded_data_file_path, dev_args=options.dev_args, doppler_correction_per_sec=options.doppler_correction_per_sec, enable_iq_dump=options.enable_iq_dump, file_path=options.file_path, if_gain=options.if_gain, iq_file_path=options.iq_file_path, lo_offset=options.lo_offset, ppm=options.ppm, rf_gain=options.rf_gain, rigctl_port=options.rigctl_port, rx_freq=options.rx_freq, rx_sdr_device=options.rx_sdr_device, samp_rate_rx=options.samp_rate_rx, udp_IP=options.udp_IP, udp_port=options.udp_port, waterfall_file_path=options.waterfall_file_path, excess_bw=options.excess_bw, max_cfo=options.max_cfo)
     tb.start()
     tb.wait()
 
