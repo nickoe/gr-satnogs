@@ -49,7 +49,8 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 set(VERSION_INFO_MAJOR_VERSION 1)
 set(VERSION_INFO_API_COMPAT    4)
 set(VERSION_INFO_MINOR_VERSION 2)
-set(VERSION_INFO_MAINT_VERSION dev)
+set(VERSION_INFO_MAINT_VERSION git)
+
 
 ########################################################################
 # Compiler specific setup
