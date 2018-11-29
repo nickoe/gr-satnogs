@@ -71,7 +71,9 @@ list(APPEND satnogs_sources
     fox_telem_mm_impl.cc
     lrpt_sync_impl.cc
     convolutional_deinterleaver.cc
-    lrpt_decoder_impl.cc)
+    lrpt_decoder_impl.cc
+    frame_acquisition_impl.cc
+    shift_reg.cc)
 
 if(${INCLUDE_DEBUG_BLOCKS})
 	list(APPEND satnogs_sources ${satnogs_debug_sources})

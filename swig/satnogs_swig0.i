@@ -37,6 +37,7 @@
 #include "satnogs/fox_telem_mm.h"
 #include "satnogs/lrpt_decoder.h"
 #include "satnogs/lrpt_sync.h"
+#include "satnogs/frame_acquisition.h"
 %}
 
 
@@ -121,3 +122,6 @@ GR_SWIG_BLOCK_MAGIC2(satnogs, lrpt_sync);
 
 %include "satnogs/lrpt_decoder.h"
 GR_SWIG_BLOCK_MAGIC2(satnogs, lrpt_decoder);
+
+%include "satnogs/frame_acquisition.h"
+GR_SWIG_BLOCK_MAGIC2(satnogs, frame_acquisition);

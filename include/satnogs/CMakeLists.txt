@@ -72,5 +72,7 @@ install(FILES
     ccsds_rs_decoder_mm.h
     fox_telem_mm.h
     lrpt_sync.h
-    lrpt_decoder.h DESTINATION include/satnogs
+    lrpt_decoder.h
+    frame_acquisition.h
+    shift_reg.h DESTINATION include/satnogs
 )
