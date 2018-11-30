@@ -74,5 +74,6 @@ install(FILES
     lrpt_sync.h
     lrpt_decoder.h
     frame_acquisition.h
-    shift_reg.h DESTINATION include/satnogs
+    shift_reg.h
+    golay24.h DESTINATION include/satnogs
 )

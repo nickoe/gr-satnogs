@@ -73,7 +73,8 @@ list(APPEND satnogs_sources
     convolutional_deinterleaver.cc
     lrpt_decoder_impl.cc
     frame_acquisition_impl.cc
-    shift_reg.cc)
+    shift_reg.cc
+    golay24.cc)
 
 if(${INCLUDE_DEBUG_BLOCKS})
 	list(APPEND satnogs_sources ${satnogs_debug_sources})
