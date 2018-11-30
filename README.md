@@ -25,9 +25,10 @@ for decoding signals from various scientific and academic sattelites.
 1. `git clone https://gitlab.com/librespacefoundation/satnogs/gr-satnogs.git`
 2. `cd gr-satnogs`
 3. `mkdir build`
-4. `cmake ..`
-5. `make`
-6. `sudo make install`
+4. `cd build`
+5. `cmake ..`
+6. `make`
+7. `sudo make install`
 
 If this is the first time you are building the gr-satnogs module run
 `sudo ldconfig`
@@ -63,8 +64,8 @@ will install the libraries at the `/usr/lib64` directory.
 For more indormation about SatNOGS please visit our [site](https://satnogs.org/).
 
 ## Release Policy
-The `gr-satnogs` OOT module uses the `major.api-compatibility.minor` 
-versioning scheme. 
+The `gr-satnogs` OOT module uses the `major.api-compatibility.minor`
+versioning scheme.
 is used by the [satnogs-client](https://gitlab.com/librespacefoundation/satnogs/satnogs-client), so the release and versioning policy is based on how the
 satnogs client is affected by the changes on the `gr-satnogs` software.
 
@@ -77,7 +78,7 @@ Changes on `satnogs-client` should be performed only to integrate the new featur
 the `satnogs-client`.
 
 For every release change a tag with the corresponding version is created.
-Releases can be retrieved by the [tags](https://gitlab.com/librespacefoundation/satnogs/gr-satnogs/tags) page. 
+Releases can be retrieved by the [tags](https://gitlab.com/librespacefoundation/satnogs/gr-satnogs/tags) page.
 
 ## License
 
