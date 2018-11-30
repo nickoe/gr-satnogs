@@ -20,6 +20,21 @@ for decoding signals from various scientific and academic sattelites.
 * libnova (for building the debug blocks)
 * libfec (it will automatically installed if not present)
 
+#### Debian / Ubuntu
+```
+apt install -y build-essential cmake gnuradio g++    \
+               python-mako python-six libogg-dev     \
+               libvorbis-dev libpng-dev libpng++-dev
+cd /tmp
+git clone https://github.com/gnuradio/volk.git
+cd volk
+mkdir build
+cd build
+cmake ..
+make -j 8
+sudo make install
+```
+
 ### Installation
 
 1. `git clone https://gitlab.com/librespacefoundation/satnogs/gr-satnogs.git`
