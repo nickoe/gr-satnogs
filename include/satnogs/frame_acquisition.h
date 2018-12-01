@@ -22,6 +22,7 @@
 #define INCLUDED_SATNOGS_FRAME_ACQUISITION_H
 
 #include <satnogs/api.h>
+#include <satnogs/whitening.h>
 #include <gnuradio/sync_block.h>
 
 namespace gr
@@ -39,19 +40,42 @@ class SATNOGS_API frame_acquisition : virtual public gr::sync_block
 public:
   typedef boost::shared_ptr<frame_acquisition> sptr;
 
-  /*!
-   * \brief Return a shared_ptr to a new instance of satnogs::frame_acquisition.
-   *
-   * To avoid accidental use of raw pointers, satnogs::frame_acquisition's
-   * constructor is in a private implementation
-   * class. satnogs::frame_acquisition::make is the public interface for
-   * creating new instances.
-   */
+  typedef enum {
+    CRC_NONE = 0,
+    CRC16,
+    CRC32
+  } checksum_t;
+
+
   static sptr
-  make (const std::vector<uint8_t>& preamble,
-        size_t preamble_threshold,
-        const std::vector<uint8_t>& sync,
-        size_t sync_threshold);
+  make_generic_var_len (const std::vector<uint8_t>& preamble,
+                        size_t preamble_threshold,
+                        const std::vector<uint8_t>& sync,
+                        size_t sync_threshold,
+                        size_t frame_size_len = 1,
+                        checksum_t crc = CRC_NONE,
+                        whitening::sptr descrambler = nullptr,
+                        size_t max_frame_len = 2048);
+
+  static sptr
+  make_generic_const_len(const std::vector<uint8_t>& preamble,
+                         size_t preamble_threshold,
+                         const std::vector<uint8_t>& sync,
+                         size_t sync_threshold,
+                         size_t frame_len = 1,
+                         checksum_t crc = CRC_NONE,
+                         whitening::sptr descrambler = nullptr,
+                         size_t max_frame_len = 2048);
+
+  static sptr
+  make_golay24_var_len (const std::vector<uint8_t>& preamble,
+                        size_t preamble_threshold,
+                        const std::vector<uint8_t>& sync,
+                        size_t sync_threshold,
+                        checksum_t crc = CRC_NONE,
+                        whitening::sptr descrambler = nullptr,
+                        size_t max_frame_len = 2048);
+
 };
 
 } // namespace satnogs

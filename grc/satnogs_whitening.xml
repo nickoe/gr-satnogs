@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<block>
+  <name>Whitening</name>
+  <key>variable_whitening</key>
+  <import>import satnogs</import>
+  <var_make>self.$(id) = $(id) = satnogs.whitening_make($mask, $seed, $order)</var_make>
+  <var_value>satnogs.whitening_make($mask, $seed, $order)</var_value>
+  <make></make>
+  <param>
+      <name>Ignore Me</name>
+      <key>value</key>
+      <value>'ok'</value>
+      <type>raw</type>
+      <hide>all</hide>
+  </param>
+
+  <param>
+    <name>Mask</name>
+    <key>mask</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Seed</name>
+    <key>seed</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Order</name>
+    <key>order</key>
+    <type>int</type>
+  </param>
+
+</block>

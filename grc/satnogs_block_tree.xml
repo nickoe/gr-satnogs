@@ -41,4 +41,5 @@
   <block>satnogs_quad_demod_filter_ff</block>
   <block>satnogs_ccsds_rs_decoder_mm</block>
   <block>satnogs_decoder_8b10b</block>
+  <block>variable_whitening</block>
 </cat>

@@ -31,6 +31,23 @@ namespace gr
 namespace satnogs
 {
 
+int whitening::base_unique_id = 1;
+
+
+/**
+ * Data whitening and de-whitening class
+ * @param mask the polynomial mask
+ * @param seed the initial seed
+ * @param order the order of the shift register. This is equal to the
+ * number of memory stages.
+ */
+whitening::sptr
+whitening::make (uint32_t mask, uint32_t seed, uint32_t order)
+{
+  return whitening::sptr(new whitening(mask, seed, order));
+}
+
+
 /**
  * Data whitening and de-whitening class
  * @param mask the polynomial mask
@@ -39,8 +56,16 @@ namespace satnogs
  * number of memory stages.
  */
 whitening::whitening (uint32_t mask, uint32_t seed, uint32_t order) :
-        d_lfsr (mask, seed, order)
+        d_lfsr (mask, seed, order),
+        d_id(0)
 {
+  d_id = base_unique_id++;
+}
+
+int
+whitening::unique_id ()
+{
+  return d_id;
 }
 
 /**

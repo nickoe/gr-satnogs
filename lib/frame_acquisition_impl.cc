@@ -23,7 +23,10 @@
 #endif
 
 #include <gnuradio/io_signature.h>
+
 #include "frame_acquisition_impl.h"
+
+#include <satnogs/golay24.h>
 
 namespace gr
 {
@@ -31,28 +34,85 @@ namespace satnogs
 {
 
 frame_acquisition::sptr
-frame_acquisition::make (const std::vector<uint8_t>& preamble,
-                         size_t preamble_threshold,
-                         const std::vector<uint8_t>& sync,
-                         size_t sync_threshold)
+frame_acquisition::make_generic_var_len (const std::vector<uint8_t>& preamble,
+                                         size_t preamble_threshold,
+                                         const std::vector<uint8_t>& sync,
+                                         size_t sync_threshold,
+                                         size_t frame_size_len,
+                                         checksum_t crc,
+                                         whitening::sptr descrambler,
+                                         size_t max_frame_len)
 {
   return gnuradio::get_initial_sptr (
-      new frame_acquisition_impl (preamble, preamble_threshold, sync,
-                                  sync_threshold));
+      new frame_acquisition_impl (frame_acquisition_impl::GENERIC_VAR_FRAME_LEN,
+                                  preamble,
+                                  preamble_threshold, sync, sync_threshold,
+                                  frame_size_len, 0, crc, descrambler,
+                                  max_frame_len));
 }
 
-frame_acquisition_impl::frame_acquisition_impl (
-    const std::vector<uint8_t>& preamble, size_t preamble_threshold,
-    const std::vector<uint8_t>& sync, size_t sync_threshold) :
+frame_acquisition::sptr
+frame_acquisition::make_generic_const_len (const std::vector<uint8_t>& preamble,
+                                           size_t preamble_threshold,
+                                           const std::vector<uint8_t>& sync,
+                                           size_t sync_threshold,
+                                           size_t frame_len, checksum_t crc,
+                                           whitening::sptr descrambler,
+                                           size_t max_frame_len)
+{
+  return gnuradio::get_initial_sptr (
+      new frame_acquisition_impl (frame_acquisition_impl::GENERIC_CONSTANT_FRAME_LEN,
+                                  preamble,
+                                  preamble_threshold, sync, sync_threshold,
+                                  0, frame_len, crc, descrambler,
+                                  max_frame_len));
+}
+
+frame_acquisition::sptr
+frame_acquisition::make_golay24_var_len (const std::vector<uint8_t>& preamble,
+                                         size_t preamble_threshold,
+                                         const std::vector<uint8_t>& sync,
+                                         size_t sync_threshold, checksum_t crc,
+                                         whitening::sptr descrambler,
+                                         size_t max_frame_len)
+{
+  return gnuradio::get_initial_sptr (
+      new frame_acquisition_impl (frame_acquisition_impl::GOLAY24_CODED_FRAME_LEN,
+                                  preamble,
+                                  preamble_threshold, sync, sync_threshold,
+                                  0, 0, crc, descrambler,
+                                  max_frame_len));
+}
+
+frame_acquisition_impl::frame_acquisition_impl (variant_t variant,
+                          const std::vector<uint8_t>& preamble,
+                          size_t preamble_threshold,
+                          const std::vector<uint8_t>& sync,
+                          size_t sync_threshold,
+                          size_t frame_size_len,
+                          size_t frame_len,
+                          checksum_t crc,
+                          whitening::sptr descrambler,
+                          size_t max_frame_len) :
         gr::sync_block ("frame_acquisition",
                         gr::io_signature::make (1, 1, sizeof(uint8_t)),
                         gr::io_signature::make (0, 0, 0)),
+                        d_variant(variant),
                         d_preamble(preamble.size() * 8),
+                        d_preamble_shift_reg(preamble.size() * 8),
                         d_preamble_len(preamble.size() * 8),
                         d_preamble_thrsh(preamble_threshold),
                         d_sync(sync.size() * 8),
+                        d_sync_shift_reg(sync.size() * 8),
                         d_sync_len(sync.size() * 8),
-                        d_sync_thrsh(sync_threshold)
+                        d_sync_thrsh(sync_threshold),
+                        d_state(SEARCHING),
+                        d_cnt(0),
+                        d_frame_size_field_len(frame_size_len),
+                        d_frame_len(frame_len),
+                        d_max_frame_len(max_frame_len),
+                        d_crc(crc),
+                        d_whitening(descrambler)
 {
   set_output_multiple(8);
   for(uint8_t b : preamble) {
@@ -77,6 +137,45 @@ frame_acquisition_impl::frame_acquisition_impl (
     d_sync <<= ((b >> 1) & 0x1);
     d_sync <<= (b & 0x1);
   }
+
+  /* Parameters checking */
+  if (max_frame_len == 0) {
+    throw std::invalid_argument (
+        "The maximum frame size should be at least 1 byte");
+  }
+
+  if(d_sync_len < 8) {
+    throw std::invalid_argument("SYNC word should be at least 8 bits");
+  }
+
+  if(d_preamble_len < 8) {
+    throw std::invalid_argument("Preamble should be at least 8 bits");
+  }
+
+  if (d_preamble_len < 2 * d_preamble_thrsh) {
+    throw std::invalid_argument (
+        "Too many error bits are allowed for the preamble."
+        "Consider lowering the threshold");
+  }
+
+  if (d_sync_len < 2 * d_sync_thrsh) {
+    throw std::invalid_argument (
+        "Too many error bits are allowed for the sync word. "
+        "Consider lowering the threshold");
+  }
+
+  if (d_frame_size_field_len > 4) {
+    throw std::invalid_argument ("Frame length field can be up to 4 bytes");
+  }
+
+  if (d_frame_size_field_len == 0) {
+    throw std::invalid_argument ("Frame length field cannot be 0");
+  }
+
+  d_pdu = new uint8_t[max_frame_len];
+
+  /* Register the PMT message queue */
+  message_port_register_out(pmt::mp("out"));
 }
 
 /*
@@ -84,6 +183,7 @@ frame_acquisition_impl::frame_acquisition_impl (
  */
 frame_acquisition_impl::~frame_acquisition_impl ()
 {
+  delete [] d_pdu;
 }
 
 
@@ -95,10 +195,196 @@ frame_acquisition_impl::work (int noutput_items,
 {
   const uint8_t *in = (const uint8_t *) input_items[0];
 
-  // Do <+signal processing+>
+  switch(d_state)
+  {
+    case SEARCHING:
+      return searching_preamble(in, noutput_items);
+    case SEARCHING_SYNC:
+      return searching_sync(in, noutput_items);
+    case DECODING_GENERIC_FRAME_LEN:
+      return dec_generic_frame_len(in, noutput_items);
+    case DECODING_GOLAY24_FRAME_LEN:
+      return dec_golay24_frame_len(in, noutput_items);
+    case DECODING_PAYLOAD:
+      return decoding(in, noutput_items);
+    default:
+      return noutput_items;
+  }
+}
 
-  // Tell runtime system how many output items we produced.
-  return noutput_items;
+int
+frame_acquisition_impl::searching_preamble (const uint8_t* in, int len)
+{
+  for(int i = 0; i < len; i++) {
+    d_preamble_shift_reg <<= in[i];
+    shift_reg tmp = d_preamble_shift_reg ^ d_preamble;
+    if(tmp.count() <= d_preamble_thrsh) {
+      d_state = SEARCHING_SYNC;
+      d_cnt = 0;
+      return i+1;
+    }
+  }
+  return len;
+}
+
+int
+frame_acquisition_impl::searching_sync (const uint8_t* in, int len)
+{
+  for (int i = 0; i < len; i++) {
+    d_sync_shift_reg <<= in[i];
+    shift_reg tmp = d_sync_shift_reg ^ d_sync;
+    d_cnt++;
+    if (tmp.count () <= d_sync_thrsh) {
+      switch(d_variant) {
+        case GENERIC_VAR_FRAME_LEN:
+          d_state = DECODING_GENERIC_FRAME_LEN;
+          break;
+        case GENERIC_CONSTANT_FRAME_LEN:
+          d_state = DECODING_GENERIC_FRAME_LEN;
+          break;
+      }
+      d_cnt = 0;
+      return i + 1;
+    }
+
+    /* The sync word should be available by now */
+    if(d_cnt > d_preamble_len * 2 + d_sync_len) {
+      reset();
+      return i + 1;
+    }
+  }
+  return len;
+}
+
+int
+frame_acquisition_impl::dec_generic_frame_len (const uint8_t* in, int len)
+{
+  const int s = std::min(len / 8, (int) d_frame_size_field_len);
+  for(int i = 0; i < s; i++) {
+    uint8_t b = 0x0;
+    b |= in[i * 8] << 7;
+    b |= in[i * 8 + 1] << 6;
+    b |= in[i * 8 + 2] << 5;
+    b |= in[i * 8 + 3] << 4;
+    b |= in[i * 8 + 4] << 3;
+    b |= in[i * 8 + 5] << 2;
+    b |= in[i * 8 + 6] << 1;
+    b |= in[i * 8 + 7];
+    d_frame_len <<= 8;
+    d_frame_len |= b;
+    d_cnt++;
+    if(d_cnt == d_frame_size_field_len) {
+
+      /* Most of the available modems apply whitening on the frame length too */
+      if(d_whitening) {
+        uint32_t descrambled = 0x0;
+        d_whitening->descramble((uint8_t *)&descrambled,
+                                (const uint8_t *)&d_frame_len,
+                                d_frame_size_field_len, true);
+        d_frame_len = descrambled;
+      }
+      if(d_frame_len < d_max_frame_len) {
+        d_state = DECODING_PAYLOAD;
+      }
+      else{
+        reset();
+        return (i + 1) * 8;
+      }
+      d_cnt = 0;
+      return (i + 1) * 8;
+    }
+  }
+  return s * 8;
+}
+
+int
+frame_acquisition_impl::dec_golay24_frame_len (const uint8_t* in, int len)
+{
+  /* Golay24 needs 3 bytes to decode */
+  const int s = std::min(len / 8, 3);
+  for(int i = 0; i < s; i++) {
+    uint8_t b = 0x0;
+    b |= in[i * 8] << 7;
+    b |= in[i * 8 + 1] << 6;
+    b |= in[i * 8 + 2] << 5;
+    b |= in[i * 8 + 3] << 4;
+    b |= in[i * 8 + 4] << 3;
+    b |= in[i * 8 + 5] << 2;
+    b |= in[i * 8 + 6] << 1;
+    b |= in[i * 8 + 7];
+    d_frame_len <<= 8;
+    d_frame_len |= b;
+    d_cnt++;
+
+    /* Try to decode the frame length */
+    if (d_cnt == 3) {
+      if(d_whitening) {
+        uint32_t descrambled = 0x0;
+        d_whitening->descramble((uint8_t *)&descrambled,
+                                (const uint8_t *)&d_frame_len, 3, true);
+        d_frame_len = descrambled;
+      }
+      golay24 g = golay24 ();
+      uint16_t tmp = 0;
+      if (g.decode24 (&tmp, d_frame_len)) {
+        d_frame_len = tmp;
+        /* Check if the payload can fit in the buffer */
+        if(d_frame_len > d_max_frame_len) {
+          reset();
+          return (i + 1) * 8;
+        }
+        else{
+          d_state = DECODING_PAYLOAD;
+        }
+      }
+      else {
+        reset ();
+        return (i + 1) * 8;
+      }
+      d_cnt = 0;
+      return (i + 1) * 8;
+    }
+  }
+  return s * 8;
+}
+
+int
+frame_acquisition_impl::decoding (const uint8_t* in, int len)
+{
+  const int s = len / 8;
+  for(int i = 0; i < s; i++) {
+    uint8_t b = 0x0;
+    b |= in[i * 8] << 7;
+    b |= in[i * 8 + 1] << 6;
+    b |= in[i * 8 + 2] << 5;
+    b |= in[i * 8 + 3] << 4;
+    b |= in[i * 8 + 4] << 3;
+    b |= in[i * 8 + 5] << 2;
+    b |= in[i * 8 + 6] << 1;
+    b |= in[i * 8 + 7];
+    d_pdu[d_cnt++] = b;
+    if(d_cnt == d_frame_len) {
+      if(d_whitening) {
+        d_whitening->descramble(d_pdu, d_pdu, d_frame_len, true);
+      }
+      /* TODO */
+      reset();
+      return (i+1) * 8;
+    }
+  }
+  return len;
+}
+
+void
+frame_acquisition_impl::reset ()
+{
+  if(d_whitening) {
+    d_whitening->reset();
+  }
+  d_cnt = 0;
+  d_state = SEARCHING;
+  d_preamble_shift_reg.reset();
+  d_sync_shift_reg.reset();
 }
 
 } /* namespace satnogs */
