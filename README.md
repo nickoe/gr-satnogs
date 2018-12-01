@@ -17,7 +17,6 @@ for decoding signals from various scientific and academic sattelites.
 
 **Optional**
 * gr-osmocom (for using the flowgraphs with real SDR hardware)
-* libnova (for building the debug blocks)
 * libfec (it will automatically installed if not present)
 
 #### Debian / Ubuntu
@@ -35,7 +34,7 @@ make -j 8
 sudo make install
 ```
 
-### Installation
+### Installation from source
 
 1. `git clone https://gitlab.com/librespacefoundation/satnogs/gr-satnogs.git`
 2. `cd gr-satnogs`
