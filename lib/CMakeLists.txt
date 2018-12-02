@@ -93,8 +93,6 @@ add_dependencies(gnuradio-satnogs fec)
 target_link_libraries(gnuradio-satnogs
     ${Boost_LIBRARIES}
     ${GNURADIO_ALL_LIBRARIES}
-    gnuradio-blocks
-    gnuradio-digital
     ${CMAKE_THREAD_LIBS_INIT}
     ${VOLK_LIBRARIES}
     ${OGGVORBIS_LIBRARIES}
