@@ -8,6 +8,10 @@
 //load generated python docstrings
 %include "satnogs_swig0_doc.i"
 
+
+%template(whitening_sptr) boost::shared_ptr<gr::satnogs::whitening>;
+
+
 %{
 #include "satnogs/morse_tree.h"
 #include "satnogs/morse_decoder.h"

@@ -42,4 +42,5 @@
   <block>satnogs_ccsds_rs_decoder_mm</block>
   <block>satnogs_decoder_8b10b</block>
   <block>variable_whitening</block>
+  <block>satnogs_frame_acquisition</block>
 </cat>

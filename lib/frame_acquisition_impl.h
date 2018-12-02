@@ -33,21 +33,15 @@ class frame_acquisition_impl : public frame_acquisition
 {
 
 public:
-  typedef enum {
-    GENERIC_VAR_FRAME_LEN = 0,
-    GENERIC_CONSTANT_FRAME_LEN,
-    GOLAY24_CODED_FRAME_LEN
-  } variant_t;
-
   frame_acquisition_impl (variant_t variant,
                           const std::vector<uint8_t>& preamble,
                           size_t preamble_threshold,
                           const std::vector<uint8_t>& sync,
                           size_t sync_threshold,
-                          size_t frame_size_len,
+                          size_t frame_size_field_len,
                           size_t frame_len,
                           checksum_t crc,
-                          whitening::sptr descrambler,
+                          whitening::whitening_sptr descrambler,
                           size_t max_frame_len);
 
   ~frame_acquisition_impl ();
@@ -81,11 +75,12 @@ private:
   const size_t                  d_sync_thrsh;
   decoding_state_t              d_state;
   uint32_t                      d_cnt;
-  const uint32_t                d_frame_size_field_len;
+  uint32_t                      d_frame_size_field_len;
   uint32_t                      d_frame_len;
   const uint32_t                d_max_frame_len;
   const checksum_t              d_crc;
-  whitening::sptr               d_whitening;
+  uint32_t                      d_crc_len;
+  whitening::whitening_sptr     d_whitening;
   uint8_t                       *d_pdu;
 
 
@@ -105,6 +100,9 @@ private:
 
   void
   reset();
+
+  bool
+  check_crc();
 };
 
 } // namespace satnogs

@@ -42,12 +42,14 @@ public:
   int
   unique_id ();
 
-  typedef boost::shared_ptr<whitening> sptr;
+  typedef boost::shared_ptr<whitening> whitening_sptr;
 
-  static sptr
+  static whitening_sptr
   make(uint32_t mask, uint32_t seed, uint32_t order);
 
   whitening (uint32_t mask, uint32_t seed, uint32_t order);
+
+  ~whitening();
 
   void
   reset ();
@@ -65,7 +67,7 @@ public:
 
 private:
   digital::lfsr         d_lfsr;
-int                     d_id;
+  int                   d_id;
 };
 
 } // namespace satnogs

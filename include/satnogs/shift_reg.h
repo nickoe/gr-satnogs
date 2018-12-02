@@ -23,6 +23,8 @@
 
 #include <satnogs/api.h>
 #include <deque>
+#include <ostream>
+
 namespace gr
 {
 namespace satnogs
@@ -35,7 +37,7 @@ namespace satnogs
 class SATNOGS_API shift_reg
 {
 public:
-  shift_reg (size_t len = 32);
+  shift_reg (size_t len);
   ~shift_reg ();
 
   void
@@ -86,6 +88,8 @@ public:
   bool
   back();
 
+  friend std::ostream&
+  operator<<(std::ostream& os, const shift_reg& reg);
 
 private:
   const size_t          d_len;

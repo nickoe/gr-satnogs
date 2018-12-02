@@ -41,10 +41,10 @@ int whitening::base_unique_id = 1;
  * @param order the order of the shift register. This is equal to the
  * number of memory stages.
  */
-whitening::sptr
+whitening::whitening_sptr
 whitening::make (uint32_t mask, uint32_t seed, uint32_t order)
 {
-  return whitening::sptr(new whitening(mask, seed, order));
+  return whitening::whitening_sptr(new whitening(mask, seed, order));
 }
 
 
@@ -60,6 +60,10 @@ whitening::whitening (uint32_t mask, uint32_t seed, uint32_t order) :
         d_id(0)
 {
   d_id = base_unique_id++;
+}
+
+whitening::~whitening ()
+{
 }
 
 int

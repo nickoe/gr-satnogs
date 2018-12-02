@@ -52,6 +52,7 @@ list(APPEND enabled_blocks
     satnogs_ogg_source.xml
     satnogs_noaa_apt_sink.xml
     satnogs_whitening.xml
+    satnogs_frame_acquisition.xml
 )
 
 if(${INCLUDE_DEBUG_BLOCKS})

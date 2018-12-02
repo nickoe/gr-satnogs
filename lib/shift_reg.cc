@@ -199,6 +199,15 @@ shift_reg::back ()
   return d_reg.back();
 }
 
+std::ostream&
+operator<<(std::ostream& os, const shift_reg& reg)
+{
+  for(bool bit : reg.d_reg) {
+    os << " " << bit;
+  }
+  return os;
+}
+
 } /* namespace satnogs */
 } /* namespace gr */
 

@@ -27,6 +27,9 @@
 #include "frame_acquisition_impl.h"
 
 #include <satnogs/golay24.h>
+#include <satnogs/log.h>
+#include <satnogs/utils.h>
+#include <arpa/inet.h>
 
 namespace gr
 {
@@ -34,53 +37,27 @@ namespace satnogs
 {
 
 frame_acquisition::sptr
-frame_acquisition::make_generic_var_len (const std::vector<uint8_t>& preamble,
-                                         size_t preamble_threshold,
-                                         const std::vector<uint8_t>& sync,
-                                         size_t sync_threshold,
-                                         size_t frame_size_len,
-                                         checksum_t crc,
-                                         whitening::sptr descrambler,
-                                         size_t max_frame_len)
+frame_acquisition::make (variant_t variant,
+       const std::vector<uint8_t>& preamble,
+       size_t preamble_threshold,
+       const std::vector<uint8_t>& sync,
+       size_t sync_threshold,
+       size_t frame_size_field_len,
+       size_t frame_len,
+       checksum_t crc,
+       whitening::whitening_sptr descrambler,
+       size_t max_frame_len)
 {
   return gnuradio::get_initial_sptr (
-      new frame_acquisition_impl (frame_acquisition_impl::GENERIC_VAR_FRAME_LEN,
+      new frame_acquisition_impl (variant,
                                   preamble,
-                                  preamble_threshold, sync, sync_threshold,
-                                  frame_size_len, 0, crc, descrambler,
-                                  max_frame_len));
-}
-
-frame_acquisition::sptr
-frame_acquisition::make_generic_const_len (const std::vector<uint8_t>& preamble,
-                                           size_t preamble_threshold,
-                                           const std::vector<uint8_t>& sync,
-                                           size_t sync_threshold,
-                                           size_t frame_len, checksum_t crc,
-                                           whitening::sptr descrambler,
-                                           size_t max_frame_len)
-{
-  return gnuradio::get_initial_sptr (
-      new frame_acquisition_impl (frame_acquisition_impl::GENERIC_CONSTANT_FRAME_LEN,
-                                  preamble,
-                                  preamble_threshold, sync, sync_threshold,
-                                  0, frame_len, crc, descrambler,
-                                  max_frame_len));
-}
-
-frame_acquisition::sptr
-frame_acquisition::make_golay24_var_len (const std::vector<uint8_t>& preamble,
-                                         size_t preamble_threshold,
-                                         const std::vector<uint8_t>& sync,
-                                         size_t sync_threshold, checksum_t crc,
-                                         whitening::sptr descrambler,
-                                         size_t max_frame_len)
-{
-  return gnuradio::get_initial_sptr (
-      new frame_acquisition_impl (frame_acquisition_impl::GOLAY24_CODED_FRAME_LEN,
-                                  preamble,
-                                  preamble_threshold, sync, sync_threshold,
-                                  0, 0, crc, descrambler,
+                                  preamble_threshold,
+                                  sync,
+                                  sync_threshold,
+                                  frame_size_field_len,
+                                  frame_len,
+                                  crc,
+                                  descrambler,
                                   max_frame_len));
 }
 
@@ -89,10 +66,10 @@ frame_acquisition_impl::frame_acquisition_impl (variant_t variant,
                           size_t preamble_threshold,
                           const std::vector<uint8_t>& sync,
                           size_t sync_threshold,
-                          size_t frame_size_len,
+                          size_t frame_size_field_len,
                           size_t frame_len,
                           checksum_t crc,
-                          whitening::sptr descrambler,
+                          whitening::whitening_sptr descrambler,
                           size_t max_frame_len) :
         gr::sync_block ("frame_acquisition",
                         gr::io_signature::make (1, 1, sizeof(uint8_t)),
@@ -108,16 +85,16 @@ frame_acquisition_impl::frame_acquisition_impl (variant_t variant,
                         d_sync_thrsh(sync_threshold),
                         d_state(SEARCHING),
                         d_cnt(0),
-                        d_frame_size_field_len(frame_size_len),
+                        d_frame_size_field_len(frame_size_field_len),
                         d_frame_len(frame_len),
                         d_max_frame_len(max_frame_len),
                         d_crc(crc),
+                        d_crc_len(0),
                         d_whitening(descrambler)
 {
   set_output_multiple(8);
   for(uint8_t b : preamble) {
     d_preamble <<= (b >> 7);
-    d_preamble <<= ((b >> 6) & 0x1);
     d_preamble <<= ((b >> 6) & 0x1);
     d_preamble <<= ((b >> 5) & 0x1);
     d_preamble <<= ((b >> 4) & 0x1);
@@ -128,7 +105,6 @@ frame_acquisition_impl::frame_acquisition_impl (variant_t variant,
   }
   for(uint8_t b : sync) {
     d_sync <<= (b >> 7);
-    d_sync <<= ((b >> 6) & 0x1);
     d_sync <<= ((b >> 6) & 0x1);
     d_sync <<= ((b >> 5) & 0x1);
     d_sync <<= ((b >> 4) & 0x1);
@@ -168,8 +144,31 @@ frame_acquisition_impl::frame_acquisition_impl (variant_t variant,
     throw std::invalid_argument ("Frame length field can be up to 4 bytes");
   }
 
-  if (d_frame_size_field_len == 0) {
+  if (d_frame_size_field_len == 0 && d_variant != GENERIC_CONSTANT_FRAME_LEN) {
     throw std::invalid_argument ("Frame length field cannot be 0");
+  }
+
+  if(d_variant == GENERIC_CONSTANT_FRAME_LEN) {
+    d_frame_size_field_len = 0;
+  }
+
+  /* Set the CRC length */
+  switch(d_crc) {
+    case CRC16_CCITT:
+      d_crc_len = 2;
+      break;
+    case CRC16_CCITT_REVERSED:
+      d_crc_len = 2;
+      break;
+    case CRC16_IBM:
+      d_crc_len = 2;
+      break;
+    case CRC32:
+      d_crc_len = 4;
+      break;
+    default:
+      d_crc_len = 0;
+      break;
   }
 
   d_pdu = new uint8_t[max_frame_len];
@@ -219,6 +218,7 @@ frame_acquisition_impl::searching_preamble (const uint8_t* in, int len)
     d_preamble_shift_reg <<= in[i];
     shift_reg tmp = d_preamble_shift_reg ^ d_preamble;
     if(tmp.count() <= d_preamble_thrsh) {
+      LOG_DEBUG("Found PREAMBLE");
       d_state = SEARCHING_SYNC;
       d_cnt = 0;
       return i+1;
@@ -235,12 +235,16 @@ frame_acquisition_impl::searching_sync (const uint8_t* in, int len)
     shift_reg tmp = d_sync_shift_reg ^ d_sync;
     d_cnt++;
     if (tmp.count () <= d_sync_thrsh) {
+      LOG_DEBUG("Found SYNC");
       switch(d_variant) {
+        case GENERIC_CONSTANT_FRAME_LEN:
+          d_state = DECODING_PAYLOAD;
+          break;
         case GENERIC_VAR_FRAME_LEN:
           d_state = DECODING_GENERIC_FRAME_LEN;
           break;
-        case GENERIC_CONSTANT_FRAME_LEN:
-          d_state = DECODING_GENERIC_FRAME_LEN;
+        case GOLAY24_CODED_FRAME_LEN:
+          d_state = DECODING_GOLAY24_FRAME_LEN;
           break;
       }
       d_cnt = 0;
@@ -274,15 +278,28 @@ frame_acquisition_impl::dec_generic_frame_len (const uint8_t* in, int len)
     d_frame_len |= b;
     d_cnt++;
     if(d_cnt == d_frame_size_field_len) {
-
       /* Most of the available modems apply whitening on the frame length too */
       if(d_whitening) {
         uint32_t descrambled = 0x0;
         d_whitening->descramble((uint8_t *)&descrambled,
                                 (const uint8_t *)&d_frame_len,
-                                d_frame_size_field_len, true);
+                                d_frame_size_field_len, false);
         d_frame_len = descrambled;
       }
+
+      /* Mask the bits that are not used */
+      d_frame_len &= ~(0xFFFFFFFF << (d_frame_size_field_len * 8));
+      LOG_DEBUG("Found frame length: %u", d_frame_len);
+
+      /* Length field is needed for the CRC calculation */
+      for(uint32_t j = 0; j < d_frame_size_field_len; j++) {
+        d_pdu[j] = (d_frame_len >> ((d_frame_size_field_len - 1 - j) * 8)) & 0xFF;
+      }
+      d_frame_len += d_frame_size_field_len;
+
+      /* Append the CRC length if any */
+      d_frame_len += d_crc_len;
+
       if(d_frame_len < d_max_frame_len) {
         d_state = DECODING_PAYLOAD;
       }
@@ -290,7 +307,7 @@ frame_acquisition_impl::dec_generic_frame_len (const uint8_t* in, int len)
         reset();
         return (i + 1) * 8;
       }
-      d_cnt = 0;
+      d_cnt = d_frame_size_field_len;
       return (i + 1) * 8;
     }
   }
@@ -321,13 +338,17 @@ frame_acquisition_impl::dec_golay24_frame_len (const uint8_t* in, int len)
       if(d_whitening) {
         uint32_t descrambled = 0x0;
         d_whitening->descramble((uint8_t *)&descrambled,
-                                (const uint8_t *)&d_frame_len, 3, true);
+                                (const uint8_t *)&d_frame_len, 3, false);
         d_frame_len = descrambled;
       }
       golay24 g = golay24 ();
       uint16_t tmp = 0;
       if (g.decode24 (&tmp, d_frame_len)) {
         d_frame_len = tmp;
+
+        /* Append the CRC length if any */
+        d_frame_len += d_crc_len;
+
         /* Check if the payload can fit in the buffer */
         if(d_frame_len > d_max_frame_len) {
           reset();
@@ -354,7 +375,7 @@ frame_acquisition_impl::decoding (const uint8_t* in, int len)
   const int s = len / 8;
   for(int i = 0; i < s; i++) {
     uint8_t b = 0x0;
-    b |= in[i * 8] << 7;
+    b = in[i * 8] << 7;
     b |= in[i * 8 + 1] << 6;
     b |= in[i * 8 + 2] << 5;
     b |= in[i * 8 + 3] << 4;
@@ -365,9 +386,17 @@ frame_acquisition_impl::decoding (const uint8_t* in, int len)
     d_pdu[d_cnt++] = b;
     if(d_cnt == d_frame_len) {
       if(d_whitening) {
-        d_whitening->descramble(d_pdu, d_pdu, d_frame_len, true);
+        d_whitening->descramble(d_pdu  + d_frame_size_field_len,
+                                d_pdu + d_frame_size_field_len,
+                                d_frame_len - d_frame_size_field_len, false);
       }
-      /* TODO */
+
+      if (check_crc ()) {
+        message_port_pub (
+            pmt::mp ("out"),
+            pmt::make_blob (d_pdu + d_frame_size_field_len,
+                            d_frame_len - d_crc_len - d_frame_size_field_len));
+      }
       reset();
       return (i+1) * 8;
     }
@@ -385,6 +414,56 @@ frame_acquisition_impl::reset ()
   d_state = SEARCHING;
   d_preamble_shift_reg.reset();
   d_sync_shift_reg.reset();
+}
+
+bool
+frame_acquisition_impl::check_crc ()
+{
+  uint16_t crc16_c;
+  uint16_t crc16_received;
+  uint32_t crc32_c;
+  uint32_t crc32_received;
+  switch(d_crc){
+    case CRC_NONE:
+      return true;
+    case CRC16_CCITT:
+      crc16_c = crc16_ccitt(d_pdu, d_frame_len - 2);
+      memcpy(&crc16_received, d_pdu + d_frame_len - 2, 2);
+      crc16_received = ntohs(crc16_received);
+      LOG_DEBUG("Received: 0x%02x Computed: 0x%02x", crc16_received, crc16_c);
+      if(crc16_c == crc16_received) {
+        return true;
+      }
+      return false;
+    case CRC16_CCITT_REVERSED:
+      crc16_c = crc16_ccitt_reversed(d_pdu, d_frame_len - 2);
+      memcpy(&crc16_received, d_pdu + d_frame_len - 2, 2);
+      crc16_received = ntohs(crc16_received);
+      LOG_DEBUG("Received: 0x%02x Computed: 0x%02x", crc16_received, crc16_c);
+      if(crc16_c == crc16_received) {
+        return true;
+      }
+      return false;
+    case CRC16_IBM:
+      crc16_c = crc16_ibm(d_pdu, d_frame_len - 2);
+      memcpy(&crc16_received, d_pdu + d_frame_len - 2, 2);
+      crc16_received = ntohs(crc16_received);
+      LOG_DEBUG("Received: 0x%02x Computed: 0x%02x", crc16_received, crc16_c);
+      if(crc16_c == crc16_received) {
+        return true;
+      }
+      return false;
+    case CRC32:
+      crc32_c = crc32(d_pdu, d_frame_len - 4);
+      memcpy(&crc32_received, d_pdu + d_frame_len - 4, 4);
+      crc32_received = ntohl(crc32_received);
+      if(crc32_c == crc32_received) {
+        return true;
+      }
+      return false;
+    default:
+      return false;
+  }
 }
 
 } /* namespace satnogs */

@@ -41,41 +41,31 @@ public:
   typedef boost::shared_ptr<frame_acquisition> sptr;
 
   typedef enum {
+    GENERIC_CONSTANT_FRAME_LEN = 0,
+    GENERIC_VAR_FRAME_LEN,
+    GOLAY24_CODED_FRAME_LEN
+  } variant_t;
+
+  typedef enum {
     CRC_NONE = 0,
-    CRC16,
+    CRC16_CCITT,
+    CRC16_CCITT_REVERSED,
+    CRC16_IBM,
     CRC32
   } checksum_t;
 
 
   static sptr
-  make_generic_var_len (const std::vector<uint8_t>& preamble,
-                        size_t preamble_threshold,
-                        const std::vector<uint8_t>& sync,
-                        size_t sync_threshold,
-                        size_t frame_size_len = 1,
-                        checksum_t crc = CRC_NONE,
-                        whitening::sptr descrambler = nullptr,
-                        size_t max_frame_len = 2048);
-
-  static sptr
-  make_generic_const_len(const std::vector<uint8_t>& preamble,
-                         size_t preamble_threshold,
-                         const std::vector<uint8_t>& sync,
-                         size_t sync_threshold,
-                         size_t frame_len = 1,
-                         checksum_t crc = CRC_NONE,
-                         whitening::sptr descrambler = nullptr,
-                         size_t max_frame_len = 2048);
-
-  static sptr
-  make_golay24_var_len (const std::vector<uint8_t>& preamble,
-                        size_t preamble_threshold,
-                        const std::vector<uint8_t>& sync,
-                        size_t sync_threshold,
-                        checksum_t crc = CRC_NONE,
-                        whitening::sptr descrambler = nullptr,
-                        size_t max_frame_len = 2048);
-
+  make(variant_t variant,
+       const std::vector<uint8_t>& preamble,
+       size_t preamble_threshold,
+       const std::vector<uint8_t>& sync,
+       size_t sync_threshold,
+       size_t frame_size_field_len,
+       size_t frame_len,
+       checksum_t crc = CRC_NONE,
+       whitening::whitening_sptr descrambler = nullptr,
+       size_t max_frame_len = 2048);
 };
 
 } // namespace satnogs

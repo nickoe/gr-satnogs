@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<block>
+  <name>Generic Frame Acquisition</name>
+  <key>satnogs_frame_acquisition</key>
+  <import>import satnogs</import>
+  <make>satnogs.frame_acquisition($variant, $preamble, $preamble_thrsh, $sync_word, $sync_thrsh, $frame_size_field_len, $frame_len, $crc, $whitening, $max_frame_len)</make>
+
+  <param>
+    <name>Variant</name>
+    <key>variant</key>
+    <type>enum</type>
+    <option>
+      <name>TI, Constant Frame Length</name>
+      <key>0</key>
+    </option>
+    <option>
+      <name>TI, Variable Frame Length</name>
+      <key>1</key>
+    </option>
+    <option>
+      <name>Golay24 coded Frame Length</name>
+      <key>2</key>
+    </option>
+  </param>
+  
+  <param>
+    <name>Frame Preamble</name>
+    <key>preamble</key>
+    <value>[0x55, 0x55, 0x55, 0x55, 0x55]</value>
+    <type>raw</type>
+  </param>
+  
+  <param>
+    <name>Preamble Threshold</name>
+    <key>preamble_thrsh</key>
+    <value>5</value>
+    <type>int</type>
+  </param>
+
+  <param>
+    <name>Synchronization Word</name>
+    <key>sync_word</key>
+    <value>[0x31, 0xe5]</value>
+    <type>raw</type>
+  </param>
+
+  <param>
+    <name>Synchronization Word Threshold</name>
+    <key>sync_thrsh</key>
+    <value>3</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Frame Size Field Length</name>
+    <key>frame_size_field_len</key>
+    <value>1</value>
+    <type>int</type>
+    <hide>>#if $variant() == 1 then 'none' else 'all'#</hide>
+  </param>
+  
+  <param>
+    <name>Frame Length</name>
+    <key>frame_len</key>
+    <value>128</value>
+    <type>int</type>
+    <hide>>#if $variant() == 0 then 'none' else 'all'#</hide>
+  </param>
+  
+  <param>
+    <name>Maximum Frame Length</name>
+    <key>max_frame_len</key>
+    <value>2048</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Whitening</name>
+    <key>whitening</key>
+    <value>None</value>
+    <type>raw</type>
+  </param>
+
+  <param>
+    <name>CRC</name>
+    <key>crc</key>
+    <type>enum</type>
+    <option>
+      <name>None</name>
+      <key>0</key>
+    </option>
+    <option>
+      <name>CRC16_CCITT</name>
+      <key>1</key>
+    </option>
+    <option>
+      <name>CRC16_CCITT_REVERSED</name>
+      <key>2</key>
+    </option>
+    <option>
+      <name>CRC16_IBM</name>
+      <key>3</key>
+    </option>
+    <option>
+      <name>CRC32_CCITT</name>
+      <key>4</key>
+    </option>
+  </param>
+  
+  <sink>
+    <name>in</name>
+    <type>byte</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+</block>
