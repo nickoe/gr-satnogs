@@ -2,7 +2,7 @@
 /*
  * gr-satnogs: SatNOGS GNU Radio Out-Of-Tree Module
  *
- *  Copyright (C) 2016,2017
+ *  Copyright (C) 2016-2018
  *  Libre Space Foundation <http://librespacefoundation.org/>
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -22,8 +22,6 @@
 #ifndef INCLUDE_SATNOGS_MORSE_H_
 #define INCLUDE_SATNOGS_MORSE_H_
 
-#define MIN_WPM 5
-#define MAX_WPM 30
 /**
  * The different Morse symbols
  */
@@ -32,7 +30,8 @@ typedef enum {
   MORSE_DASH,           //!< Morse dash (-) symbol
   MORSE_INTRA_SPACE,    //!< Space between dot and dash symbols
   MORSE_S_SPACE,        //!< Morse short space between characters
-  MORSE_L_SPACE         //!<Morse long space between words
+  MORSE_L_SPACE,        //!<Morse long space between words
+  MORSE_END_MSG_SPACE   //!< End of message
 } morse_symbol_t;
 
 

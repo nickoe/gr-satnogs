@@ -45,6 +45,7 @@ namespace gr
       size_t d_dot_samples;
       size_t d_window_size;
       size_t d_window_cnt;
+      size_t d_idle_cnt;
       size_t d_dot_windows_num;
       size_t d_dash_windows_num;
       size_t d_short_pause_windows_num;
@@ -84,7 +85,7 @@ namespace gr
 
     public:
       cw_to_symbol_impl (double sampling_rate, float threshold,
-                         float conf_level, size_t wpm);
+                         float conf_level, size_t wpm, size_t hysteresis);
       ~cw_to_symbol_impl ();
 
       // Where all the action really happens

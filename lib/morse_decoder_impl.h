@@ -24,24 +24,27 @@
 #include <satnogs/morse_decoder.h>
 #include <satnogs/morse_tree.h>
 
-namespace gr {
-  namespace satnogs {
+namespace gr
+{
+namespace satnogs
+{
 
-    class morse_decoder_impl : public morse_decoder
-    {
-     private:
-      morse_tree d_morse_tree;
-      size_t d_min_frame_len;
+class morse_decoder_impl : public morse_decoder
+{
 
-      void
-      symbol_msg_handler(pmt::pmt_t msg);
+public:
+  morse_decoder_impl (char unrecognized_char, size_t min_frame_len);
 
-     public:
-      morse_decoder_impl(char unrecognized_char, size_t min_frame_len);
+private:
+  morse_tree            d_morse_tree;
+  size_t                d_min_frame_len;
+  std::string           d_str;
 
-    };
+  void
+  symbol_msg_handler (pmt::pmt_t msg);
+};
 
-  } // namespace satnogs
+} // namespace satnogs
 } // namespace gr
 
 #endif /* INCLUDED_SATNOGS_MORSE_DECODER_IMPL_H */

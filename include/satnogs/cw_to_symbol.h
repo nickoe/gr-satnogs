@@ -24,6 +24,9 @@
 #include <satnogs/api.h>
 #include <gnuradio/sync_block.h>
 
+#define MIN_WPM 5
+#define MAX_WPM 50
+
 namespace gr
 {
   namespace satnogs
@@ -65,10 +68,19 @@ namespace gr
        * symbols
        *
        * @param wpm Morse code Words per Minute
+       *
+       * @param hysteresis this value represents the hysteresis of a possible
+       * filter used before the CW to Symbol block. For example if there is
+       * a moving average filter with x taps, the full power of the signal
+       * will be available after x samples. The total length of samples with
+       * maximum power will be 2*x less. Because the block searches for plateaus
+       * with proper durations, this filtering hysteresis should be known.
+       * If no such a filter is used, the hysteresis value should be set to zero.
        */
       static cw_to_symbol::sptr
       make (double sampling_rate, float threshold, float conf_level = 0.9,
-            size_t wpm = 20);
+            size_t wpm = 20,
+            size_t hysteresis = 0);
 
       virtual void
       set_act_threshold (float thrld) = 0;
