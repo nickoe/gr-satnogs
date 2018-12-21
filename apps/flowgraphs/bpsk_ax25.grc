@@ -609,7 +609,8 @@
     </param>
     <param>
       <key>comment</key>
-      <value>Add a frequency offset to move the audio
+      <value>Add a frequency offset of 1200 Hz 
+to move the audio
  a bit higher than 0.</value>
     </param>
     <param>
@@ -1302,7 +1303,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>cutoff_freq</key>
-      <value>((1.0 + excess_bw) * baudrate/2.0) + max_cfo</value>
+      <value>((1.0 + excess_bw) * baudrate/2.0) + min(baudrate, abs(max_cfo))</value>
     </param>
     <param>
       <key>decim</key>
@@ -1350,7 +1351,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>width</key>
-      <value>baudrate / 16.0</value>
+      <value>baudrate / 10.0</value>
     </param>
     <param>
       <key>win</key>
@@ -1377,7 +1378,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>cutoff_freq</key>
-      <value>((1.0 + excess_bw) * baudrate/2.0) + max_cfo</value>
+      <value>((1.0 + excess_bw) * baudrate/2.0) + min(baudrate, abs(max_cfo))</value>
     </param>
     <param>
       <key>decim</key>
@@ -1425,7 +1426,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>width</key>
-      <value>baudrate / 16.0</value>
+      <value>baudrate / 10.0</value>
     </param>
     <param>
       <key>win</key>
