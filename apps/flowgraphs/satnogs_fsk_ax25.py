@@ -5,7 +5,7 @@
 # Title: satnogs_fsk_ax25
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: Generic FSK AX.25 decoder
-# Generated: Fri Jan  4 20:33:37 2019
+# Generated: Sun Jan  6 14:19:34 2019
 ##################################################
 
 from gnuradio import analog
@@ -96,6 +96,8 @@ class satnogs_fsk_ax25(gr.top_block):
         self.osmosdr_source_0.set_antenna(satnogs.handle_rx_antenna(rx_sdr_device, antenna), 0)
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx), 0)
 
+        self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
+        	1, 4.0 * baudrate, baudrate / 2 + 1500, 1000, firdes.WIN_HAMMING, 6.76))
         self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff(4, 0.25*0.175*0.175, 0.5, 0.175, 0.005)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.dc_blocker_xx_0_0 = filter.dc_blocker_ff(1024, True)
@@ -122,11 +124,12 @@ class satnogs_fsk_ax25(gr.top_block):
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0_0, 0))
         self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.satnogs_quad_demod_filter_ff_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_rotator_cc_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.analog_quadrature_demod_cf_0_0_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_iq_sink_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0_0, 0))
         self.connect((self.satnogs_quad_demod_filter_ff_0, 0), (self.digital_binary_slicer_fb_0, 0))
@@ -144,6 +147,7 @@ class satnogs_fsk_ax25(gr.top_block):
     def set_baudrate(self, baudrate):
         self.baudrate = baudrate
         self.pfb_arb_resampler_xxx_0_0.set_rate((4.0*self.baudrate)/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, 4.0 * self.baudrate, self.baudrate / 2 + 1500, 1000, firdes.WIN_HAMMING, 6.76))
 
     def get_bb_gain(self):
         return self.bb_gain
