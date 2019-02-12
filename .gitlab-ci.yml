@@ -1,5 +1,6 @@
 stages:
   - build
+  - deploy
 build:
   stage: build
   image: debian:latest
@@ -19,3 +20,25 @@ build:
     - make install
     - ldconfig
     - python -c "import satnogs"
+debian:
+  stage: deploy
+  image: debian:stretch
+  before_script:
+    - apt-get update
+    - apt-get install -y devscripts git-buildpackage
+  script:
+    - mk-build-deps -i -r -t "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
+    - PACKAGE_VERSION="$(git describe 2>/dev/null | tr '-' '+' | cut -c '2-' || true)"
+    - |
+      [ -z "$PACKAGE_VERSION" ] || {
+          dch -b -M -v "${PACKAGE_VERSION}-1" "Bump to version '${PACKAGE_VERSION}-1'"
+          dch -r -m ""
+      }
+    - gbp buildpackage -us -uc -S --git-upstream-tag='HEAD' --git-ignore-branch --git-ignore-new
+    - mkdir artifacts
+    - cp -a ../*.{deb,debian.tar.xz,dsc,build,buildinfo,changes,orig.tar.gz} artifacts/
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - artifacts
