@@ -1,20 +1,20 @@
 image: debian:latest
 
 before_script:
-    - apt-get update -qq && apt-get install -y -qq gnuradio-dev libcppunit-dev libpng++-dev libvorbis-dev cmake swig pkg-config build-essential git
+  - apt-get update -qq && apt-get install -y -qq gnuradio-dev libcppunit-dev libpng++-dev libvorbis-dev cmake swig pkg-config build-essential git
 
 test:
-    script:
-        - mkdir -p build
-        - cd build
-        - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..
-        - make
-        - make install
-        - ldconfig
-        - python -c "import satnogs"
-        - rm -rf *
-        - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DINCLUDE_DEBUG_BLOCKS=OFF -DCMAKE_INSTALL_PREFIX=/usr  ..
-        - make
-        - make install
-        - ldconfig
-        - python -c "import satnogs"
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..
+    - make
+    - make install
+    - ldconfig
+    - python -c "import satnogs"
+    - rm -rf *
+    - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DINCLUDE_DEBUG_BLOCKS=OFF -DCMAKE_INSTALL_PREFIX=/usr  ..
+    - make
+    - make install
+    - ldconfig
+    - python -c "import satnogs"
