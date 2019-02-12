@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+export DEB_HOST_MULTIARCH
+DEB_DEBIAN_DIR=$(dir $(firstword $(MAKEFILE_LIST)))
+VER=$(shell dpkg-parsechangelog -l$(DEB_DEBIAN_DIR)/changelog \
+              | sed -rne 's,^Version: ([^-]+).*,\1,p')
+GITREV=$(shell echo $(VER) | sed -rne 's,^[0-9]{8}\.([0-f]{7})$$,\1,p' -e 's,^([0-9]+\.[0-9]+.*)$$,v\1,p')
+
+%:
+	dh $@ --with python2 --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DLIB_SUFFIX="/$(DEB_HOST_MULTIARCH)" -DPythonLibs_FIND_VERSION:STRING="2.7" -DPYTHON_EXECUTABLE:STRING="/usr/bin/python"
+
+override_dh_auto_install:
+	dh_auto_install
+
+version-to-get:
+	echo $(VER) is $(GITREV)
+
+get-orig-source: version-to-get
+	git clone https://gitlab.com/librespacefoundation/satnogs/gr-satnogs.git .gr-satnogs
+	cd .gr-satnogs && git archive --format=tar --prefix=gr-satnogs-$(VER)/ $(GITREV) | xz > ../gr-satnogs_$(VER).orig.tar.xz
+	rm -rf .gr-satnogs
