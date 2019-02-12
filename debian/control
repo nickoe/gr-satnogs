@@ -19,14 +19,14 @@ Build-Depends: cmake,
                python-dev,
                swig
 X-Python-Version: >= 2.7, << 2.8
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: https://gitlab.com/librespacefoundation/satnogs/gr-satnogs
 Vcs-Git: https://gitlab.com/librespacefoundation/satnogs/gr-satnogs.git
 Vcs-Browser: https://gitlab.com/librespacefoundation/satnogs/gr-satnogs
 
 Package: gr-satnogs
 Architecture: any
-Pre-Depends: multiarch-support
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${python:Depends},
          ${shlibs:Depends},
          ${misc:Depends}
