@@ -1,27 +1,7 @@
 stages:
   - build
-  - deploy
-build:
-  stage: build
-  image: debian:latest
-  before_script:
-    - apt-get update -qq && apt-get install -y -qq gnuradio-dev libcppunit-dev libpng++-dev libvorbis-dev cmake swig pkg-config build-essential git
-  script:
-    - mkdir -p build
-    - cd build
-    - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..
-    - make
-    - make install
-    - ldconfig
-    - python -c "import satnogs"
-    - rm -rf *
-    - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DINCLUDE_DEBUG_BLOCKS=OFF -DCMAKE_INSTALL_PREFIX=/usr  ..
-    - make
-    - make install
-    - ldconfig
-    - python -c "import satnogs"
 debian:
-  stage: deploy
+  stage: build
   image: debian:stretch
   before_script:
     - apt-get update
@@ -34,7 +14,7 @@ debian:
           dch -b -M -v "${PACKAGE_VERSION}-1" "Bump to version '${PACKAGE_VERSION}-1'"
           dch -r -m ""
       }
-    - gbp buildpackage -us -uc -S --git-upstream-tag='HEAD' --git-ignore-branch --git-ignore-new
+    - gbp buildpackage -us -uc --git-upstream-tag='HEAD' --git-ignore-branch --git-ignore-new
     - mkdir artifacts
     - cp -a ../*.{deb,debian.tar.xz,dsc,build,buildinfo,changes,orig.tar.gz} artifacts/
   artifacts:
