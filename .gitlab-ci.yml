@@ -1,5 +1,6 @@
 stages:
   - build
+  - deploy
 debian:
   stage: build
   image: debian:stretch
@@ -8,7 +9,8 @@ debian:
     - apt-get install -y devscripts git-buildpackage
   script:
     - mk-build-deps -i -r -t "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
-    - PACKAGE_VERSION="$(git describe 2>/dev/null | tr '-' '+' | cut -c '2-' || true)"
+    - PACKAGE_VERSION="${CI_COMMIT_TAG#v}"
+    - PACKAGE_VERSION="${PACKAGE_VERSION:-$(git describe 2>/dev/null | tr '-' '+' | cut -c '2-' || true)}"
     - |
       [ -z "$PACKAGE_VERSION" ] || {
           dch -b -M -v "${PACKAGE_VERSION}-1" "Bump to version '${PACKAGE_VERSION}-1'"
@@ -22,3 +24,42 @@ debian:
     when: always
     paths:
       - artifacts
+deploy:
+  stage: deploy
+  image: debian:stretch
+  before_script:
+    - apt-get update
+    - apt-get install -y osc
+  script:
+    - |
+      cat <<-EOF > ~/.oscrc
+      [general]
+      apiurl = https://api.opensuse.org
+      [https://api.opensuse.org]
+      user = $OBS_USER
+      pass = $OBS_PASS
+      EOF
+    - |
+      PROJECT="${CI_COMMIT_TAG:+home:librespace:satnogs}"
+      PROJECT="${PROJECT:-home:librespace:satnogs-unstable}"
+      BASE_DIR="$(pwd)"
+      OSC_WORKDIR="$BASE_DIR/osc_workdir"
+      ARTIFACTS_DIR="$BASE_DIR/artifacts"
+      DSC_FILENAME=$(basename $(ls "$ARTIFACTS_DIR"/*.dsc))
+      PACKAGE="${CI_COMMIT_TAG:+${DSC_FILENAME%.dsc}}"
+      PACKAGE="${PACKAGE:-${DSC_FILENAME%%_*}}"
+      mkdir -p "$OSC_WORKDIR"
+      cd "$OSC_WORKDIR"
+      [ -d "$PROJECT" ] || osc co "$PROJECT"
+      cd "$PROJECT"
+      [ -d "$PACKAGE" ] || osc mkpac "$PACKAGE"
+      rm -f "$PACKAGE"/*.{dsc,debian.tar.xz,orig.tar.gz}
+      cp -a "$ARTIFACTS_DIR"/*.{dsc,debian.tar.xz,orig.tar.gz} "$PACKAGE"
+      osc addremove -r
+      osc ci -m "$DSC_FILENAME"
+      cd "$BASE_DIR"
+      rm -r "$OSC_WORKDIR"
+  only:
+    variables:
+      - $OBS_USER
+      - $OBS_PASS
