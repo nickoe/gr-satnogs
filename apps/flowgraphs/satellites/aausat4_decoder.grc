@@ -236,11 +236,74 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
       <value>(867, 720)</value>
+    </param>
+    <param>
+      <key>gui_hint</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>lo_offset</value>
+    </param>
+    <param>
+      <key>label</key>
+      <value></value>
+    </param>
+    <param>
+      <key>min_len</key>
+      <value>200</value>
+    </param>
+    <param>
+      <key>orient</key>
+      <value>Qt.Horizontal</value>
+    </param>
+    <param>
+      <key>start</key>
+      <value>-200e3</value>
+    </param>
+    <param>
+      <key>step</key>
+      <value>10</value>
+    </param>
+    <param>
+      <key>stop</key>
+      <value>200e3</value>
+    </param>
+    <param>
+      <key>rangeType</key>
+      <value>float</value>
+    </param>
+    <param>
+      <key>widget</key>
+      <value>counter_slider</value>
+    </param>
+  </block>
+  <block>
+    <key>variable_qtgui_range</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1028, 728)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -537,7 +600,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>comm_freq_rx</key>
@@ -855,7 +918,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -934,6 +997,73 @@ TX sampling rate</value>
     </param>
   </block>
   <block>
+    <key>blocks_file_meta_sink</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>detached</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>extra_dict</key>
+      <value>""</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/nickoe/aausat4_beacon_parser/aausat4_pass/iq_from_osmocom_source_48000sps_File_Sink_meta.dat</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1676, 442)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_meta_sink_0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>max_seg_size</key>
+      <value>1000000</value>
+    </param>
+    <param>
+      <key>rel_rate</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>samp_rate</key>
+      <value>audio_samp_rate</value>
+    </param>
+    <param>
+      <key>unbuffered</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
     <key>blocks_file_sink</key>
     <param>
       <key>append</key>
@@ -985,6 +1115,57 @@ TX sampling rate</value>
     </param>
   </block>
   <block>
+    <key>blocks_file_sink</key>
+    <param>
+      <key>append</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/nickoe/aausat4_beacon_parser/aausat4_pass/iq_from_osmocom_source_48000sps_File_Sink.dat</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1660, 358)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_sink_1</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>unbuffered</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
     <key>blocks_file_source</key>
     <param>
       <key>begin_tag</key>
@@ -1004,7 +1185,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>file</key>
@@ -1063,7 +1244,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>file</key>
@@ -1131,6 +1312,37 @@ TX sampling rate</value>
     <param>
       <key>id</key>
       <value>blocks_message_debug_0</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_message_debug</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1702, 1516)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_message_debug_1</value>
     </param>
   </block>
   <block>
@@ -1232,7 +1444,7 @@ TX sampling rate</value>
     </param>
     <param>
       <key>samples_per_second</key>
-      <value>samp_rate_rx</value>
+      <value>samp_rate_rx*10</value>
     </param>
     <param>
       <key>type</key>
@@ -4304,7 +4516,7 @@ max_modulation_freq = 3000</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -6214,7 +6426,7 @@ max_modulation_freq = 3000</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>fftsize</key>
@@ -6613,7 +6825,7 @@ max_modulation_freq = 3000</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -7018,6 +7230,57 @@ max_modulation_freq = 3000</value>
     </param>
   </block>
   <block>
+    <key>sync_to_pdu_packed</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1466, 1415)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sync_to_pdu_packed_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>packlen</key>
+      <value>40</value>
+    </param>
+    <param>
+      <key>threshold</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>sync</key>
+      <value>"010011110101101000110100010000110101010101000010"</value>
+    </param>
+  </block>
+  <block>
     <key>parameter</key>
     <param>
       <key>alias</key>
@@ -7190,6 +7453,18 @@ max_modulation_freq = 3000</value>
   </connection>
   <connection>
     <source_block_id>blks2_rational_resampler_xxx_1</source_block_id>
+    <sink_block_id>blocks_file_meta_sink_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blks2_rational_resampler_xxx_1</source_block_id>
+    <sink_block_id>blocks_file_sink_1</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blks2_rational_resampler_xxx_1</source_block_id>
     <sink_block_id>low_pass_filter_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
@@ -7238,7 +7513,7 @@ max_modulation_freq = 3000</value>
   </connection>
   <connection>
     <source_block_id>blocks_throttle_0</source_block_id>
-    <sink_block_id>qtgui_waterfall_sink_x_0_0_0</sink_block_id>
+    <sink_block_id>freq_xlating_fir_filter_xxx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -7257,6 +7532,12 @@ max_modulation_freq = 3000</value>
   <connection>
     <source_block_id>digital_binary_slicer_fb_0</source_block_id>
     <sink_block_id>digital_correlate_access_code_tag_xx_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>digital_binary_slicer_fb_0</source_block_id>
+    <sink_block_id>sync_to_pdu_packed_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -7381,6 +7662,12 @@ max_modulation_freq = 3000</value>
     <sink_key>0</sink_key>
   </connection>
   <connection>
+    <source_block_id>satnogs_coarse_doppler_correction_cc_0</source_block_id>
+    <sink_block_id>qtgui_waterfall_sink_x_0_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
     <source_block_id>satnogs_frame_acquisition_0</source_block_id>
     <sink_block_id>satnogs_udp_msg_sink_0_0</sink_block_id>
     <source_key>out</source_key>
@@ -7391,5 +7678,11 @@ max_modulation_freq = 3000</value>
     <sink_block_id>satnogs_coarse_doppler_correction_cc_0</sink_block_id>
     <source_key>freq</source_key>
     <sink_key>freq</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>sync_to_pdu_packed_0</source_block_id>
+    <sink_block_id>blocks_message_debug_1</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>print_pdu</sink_key>
   </connection>
 </flow_graph>
