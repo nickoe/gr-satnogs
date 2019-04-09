@@ -44,7 +44,7 @@ hw_rx_settings = {'usrpb200' : {'rf_gain' : 50.0, 'if_gain' : 0.0,
                              'bb_gain' : 0.0, 'samp_rate' : 2e6,
                              'antenna' : 'TX/RX', 'dev_arg': 'uhd'},
                   'airspy' : {'rf_gain' : 30.0, 'if_gain' : 0.0,
-                              'bb_gain' : 0.0, 'samp_rate' : 10e6,
+                              'bb_gain' : 0.0, 'samp_rate' : 2.5e6,
                               'antenna' : '', 'dev_arg': 'airspy'},
                   'airspymini' : {'rf_gain' : 15.0, 'if_gain' : 0.0,
                               'bb_gain' : 0.0, 'samp_rate' : 3e6,
@@ -74,7 +74,9 @@ def handle_samp_rate_rx(device, samp_rate):
     :param samp_rate: the user defined RX sampling rate value
     :type samp_rate: float
     """
+    print("NICK DEBUG handle_samp_rate_rx, device={}, samp_rate={}".format(device, samp_rate))
     if(samp_rate == not_set_samp_rate_rx):
+        print("NICK DEBUG handle_samp_rate_rx is {}".format(hw_rx_settings[device]['samp_rate']))
         return hw_rx_settings[device]['samp_rate']
     else:
         return samp_rate

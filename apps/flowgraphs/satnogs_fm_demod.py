@@ -5,26 +5,42 @@
 # Title: FM Generic Demodulation
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: A generic FM demodulation block
-# Generated: Sun Nov 19 11:35:00 2017
+# Generated: Sat Mar  9 00:30:47 2019
 ##################################################
 
+if __name__ == '__main__':
+    import ctypes
+    import sys
+    if sys.platform.startswith('linux'):
+        try:
+            x11 = ctypes.cdll.LoadLibrary('libX11.so')
+            x11.XInitThreads()
+        except:
+            print "Warning: failed to XInitThreads()"
+
 from gnuradio import analog
+from gnuradio import blocks
 from gnuradio import eng_notation
 from gnuradio import filter
 from gnuradio import gr
+from gnuradio import wxgui
 from gnuradio.eng_option import eng_option
+from gnuradio.fft import window
 from gnuradio.filter import firdes
+from gnuradio.wxgui import waterfallsink2
+from grc_gnuradio import wxgui as grc_wxgui
 from optparse import OptionParser
 import math
 import osmosdr
 import satnogs
 import time
+import wx
 
 
-class satnogs_fm_demod(gr.top_block):
+class satnogs_fm_demod(grc_wxgui.top_block_gui):
 
-    def __init__(self, antenna=satnogs.not_set_antenna, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=20, enable_iq_dump=0, file_path='test.ogg', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', waterfall_file_path='/tmp/waterfall.dat'):
-        gr.top_block.__init__(self, "FM Generic Demodulation")
+    def __init__(self, antenna=satnogs.not_set_antenna, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=5, enable_iq_dump=0, file_path='test.ogg', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=437.425e6, rx_sdr_device='airspy', waterfall_file_path='/tmp/waterfall.dat'):
+        grc_wxgui.top_block_gui.__init__(self, title="FM Generic Demodulation")
 
         ##################################################
         # Parameters
@@ -62,6 +78,20 @@ class satnogs_fm_demod(gr.top_block):
         ##################################################
         # Blocks
         ##################################################
+        self.wxgui_waterfallsink2_0 = waterfallsink2.waterfall_sink_c(
+        	self.GetWin(),
+        	baseband_freq=0,
+        	dynamic_range=100,
+        	ref_level=0,
+        	ref_scale=2.0,
+        	sample_rate=samp_rate_rx,
+        	fft_size=512,
+        	fft_rate=15,
+        	average=False,
+        	avg_alpha=None,
+        	title='Waterfall Plot',
+        )
+        self.Add(self.wxgui_waterfallsink2_0.win)
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
         self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
@@ -83,6 +113,8 @@ class satnogs_fm_demod(gr.top_block):
         self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
         	1, audio_samp_rate, deviation+max_modulation_freq, 3000, firdes.WIN_HAMMING, 6.76))
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(int(samp_rate_rx/filter_rate), (xlate_filter_taps), lo_offset, samp_rate_rx)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_gr_complex*1, '/run/media/nickoe/Sandbox/IQ/satnogs/48000sps_aausat4_pass.dat', False)
+        self.blocks_file_sink_0.set_unbuffered(False)
         self.blks2_rational_resampler_xxx_1 = filter.rational_resampler_ccc(
                 interpolation=24,
                 decimation=125,
@@ -91,11 +123,14 @@ class satnogs_fm_demod(gr.top_block):
         )
         self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf((2*math.pi*deviation)/audio_samp_rate)
 
+
+
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.satnogs_tcp_rigctl_msg_source_0, 'freq'), (self.satnogs_coarse_doppler_correction_cc_0, 'freq'))
         self.connect((self.analog_quadrature_demod_cf_0, 0), (self.satnogs_ogg_encoder_0, 0))
+        self.connect((self.blks2_rational_resampler_xxx_1, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blks2_rational_resampler_xxx_1, 0), (self.low_pass_filter_0, 0))
         self.connect((self.blks2_rational_resampler_xxx_1, 0), (self.satnogs_iq_sink_0, 0))
         self.connect((self.blks2_rational_resampler_xxx_1, 0), (self.satnogs_waterfall_sink_0, 0))
@@ -103,6 +138,7 @@ class satnogs_fm_demod(gr.top_block):
         self.connect((self.low_pass_filter_0, 0), (self.analog_quadrature_demod_cf_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
+        self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.wxgui_waterfallsink2_0, 0))
 
     def get_antenna(self):
         return self.antenna
@@ -220,6 +256,7 @@ class satnogs_fm_demod(gr.top_block):
     def set_samp_rate_rx(self, samp_rate_rx):
         self.samp_rate_rx = samp_rate_rx
         self.set_xlate_filter_taps(firdes.low_pass(1, self.samp_rate_rx, 125000, 25000, firdes.WIN_HAMMING, 6.76))
+        self.wxgui_waterfallsink2_0.set_sample_rate(self.samp_rate_rx)
         self.osmosdr_source_0.set_sample_rate(self.samp_rate_rx)
         self.osmosdr_source_0.set_bandwidth(self.samp_rate_rx, 0)
 
@@ -282,7 +319,7 @@ def argument_parser():
         "", "--dev-args", dest="dev_args", type="string", default=satnogs.not_set_dev_args,
         help="Set dev_args [default=%default]")
     parser.add_option(
-        "", "--doppler-correction-per-sec", dest="doppler_correction_per_sec", type="intx", default=20,
+        "", "--doppler-correction-per-sec", dest="doppler_correction_per_sec", type="intx", default=5,
         help="Set doppler_correction_per_sec [default=%default]")
     parser.add_option(
         "", "--enable-iq-dump", dest="enable_iq_dump", type="intx", default=0,
@@ -309,10 +346,10 @@ def argument_parser():
         "", "--rigctl-port", dest="rigctl_port", type="intx", default=4532,
         help="Set rigctl_port [default=%default]")
     parser.add_option(
-        "", "--rx-freq", dest="rx_freq", type="eng_float", default=eng_notation.num_to_str(100e6),
+        "", "--rx-freq", dest="rx_freq", type="eng_float", default=eng_notation.num_to_str(437.425e6),
         help="Set rx_freq [default=%default]")
     parser.add_option(
-        "", "--rx-sdr-device", dest="rx_sdr_device", type="string", default='usrpb200',
+        "", "--rx-sdr-device", dest="rx_sdr_device", type="string", default='airspy',
         help="Set rx_sdr_device [default=%default]")
     parser.add_option(
         "", "--waterfall-file-path", dest="waterfall_file_path", type="string", default='/tmp/waterfall.dat',
@@ -325,8 +362,8 @@ def main(top_block_cls=satnogs_fm_demod, options=None):
         options, _ = argument_parser().parse_args()
 
     tb = top_block_cls(antenna=options.antenna, bb_gain=options.bb_gain, decoded_data_file_path=options.decoded_data_file_path, dev_args=options.dev_args, doppler_correction_per_sec=options.doppler_correction_per_sec, enable_iq_dump=options.enable_iq_dump, file_path=options.file_path, if_gain=options.if_gain, iq_file_path=options.iq_file_path, lo_offset=options.lo_offset, ppm=options.ppm, rf_gain=options.rf_gain, rigctl_port=options.rigctl_port, rx_freq=options.rx_freq, rx_sdr_device=options.rx_sdr_device, waterfall_file_path=options.waterfall_file_path)
-    tb.start()
-    tb.wait()
+    tb.Start(True)
+    tb.Wait()
 
 
 if __name__ == '__main__':
