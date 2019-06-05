@@ -43,7 +43,7 @@ sudo make install
 3. `mkdir build`
 4. `cd build`
 5. `cmake ..`
-6. `make`
+6. `make -j $(nproc --all)`
 7. `sudo make install`
 
 If this is the first time you are building the gr-satnogs module run
