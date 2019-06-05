@@ -14,6 +14,7 @@ for decoding signals from various scientific and academic sattelites.
 * libpng
 * libpng++
 * git
+* swig
 
 **Optional**
 * gr-osmocom (for using the flowgraphs with real SDR hardware)
@@ -23,14 +24,15 @@ for decoding signals from various scientific and academic sattelites.
 ```
 apt install -y build-essential cmake gnuradio g++    \
                python-mako python-six libogg-dev     \
-               libvorbis-dev libpng-dev libpng++-dev
+               libvorbis-dev libpng-dev libpng++-dev \
+               swig
 cd /tmp
 git clone https://github.com/gnuradio/volk.git
 cd volk
 mkdir build
 cd build
 cmake ..
-make -j 8
+make -j $(nproc --all)
 sudo make install
 ```
 
