@@ -2,7 +2,7 @@
 /*
  * gr-satnogs: SatNOGS GNU Radio Out-Of-Tree Module
  *
- *  Copyright (C) 2016, 2017, 2018
+ *  Copyright (C) 2016-2019
  *  Libre Space Foundation <http://librespacefoundation.org/>
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -80,9 +80,6 @@ namespace gr
                                                  size_t nitems)
     {
       size_t i;
-      uint8_t descr_bit;
-      uint8_t dec_bit;
-
       switch (d_state)
         {
         case NO_SYNC:
@@ -133,11 +130,6 @@ namespace gr
             else{
               d_decoded_bits++;
               if(d_decoded_bits == 8) {
-                /* Check if the received byte is valid */
-                if(!check_byte()) {
-                  reset_state ();
-                  return i + 1;
-                }
                 d_frame_buffer[d_received_bytes] = d_dec_b;
                 d_received_bytes++;
                 d_decoded_bits = 0;
@@ -180,8 +172,6 @@ namespace gr
     ax25_decoder_bm_impl::decode (const uint8_t* in, size_t nitems)
     {
       size_t i;
-      uint8_t descr_bit;
-      uint8_t dec_bit;
       switch (d_state)
         {
         case NO_SYNC:
@@ -231,11 +221,6 @@ namespace gr
             else {
               d_decoded_bits++;
               if (d_decoded_bits == 8) {
-                /* Check if the received byte is valid */
-                if(!check_byte()) {
-                  reset_state ();
-                  return i + 1;
-                }
                 d_frame_buffer[d_received_bytes] = d_dec_b;
                 d_received_bytes++;
                 d_decoded_bits = 0;
@@ -425,30 +410,6 @@ namespace gr
       d_dec_b = (d_dec_b >> 1) | (dec_bit << 7);
     }
 
-    /**
-     * Checks if a AX.25 decoded byte is valid. This actually can be checked
-     * only in the address field, where all fields should have the LS bit
-     * set to zero.
-     * @returns true if the decoded byte is valid, false otherwise
-     */
-    inline bool
-    ax25_decoder_bm_impl::check_byte ()
-    {
-      if(d_received_bytes < AX25_MIN_ADDR_LEN - 1) {
-        if(d_dec_b & 0x1) {
-          return false;
-        }
-      }
-      else if(d_received_bytes == AX25_MIN_ADDR_LEN - 1) {
-        if(d_dec_b & 0x1) {
-          return true;
-        }
-        return false;
-      }
-      return true;
-    }
-
-
     int
     ax25_decoder_bm_impl::work (int noutput_items,
                                 gr_vector_const_void_star &input_items,
@@ -456,7 +417,6 @@ namespace gr
     {
       int ret;
       const uint8_t *in = (const uint8_t *) input_items[0];
-
 
       if(noutput_items < 1) {
         return noutput_items;
