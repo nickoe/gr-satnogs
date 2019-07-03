@@ -5,8 +5,9 @@
 # Title: AFSK1200 AX.25 decoder
 # Author: Manolis Surligas (surligas@gmail.com), Vardakis Giorgos (vardakis.grg@gmail.com)
 # Description: AFSK1200 AX.25 decoder
-# Generated: Sun Nov 25 23:43:12 2018
+# GNU Radio version: 3.7.13.5
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -69,7 +70,6 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
         self.satnogs_udp_msg_sink_0_0 = satnogs.udp_msg_sink(udp_IP, udp_port, 1500)
         self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000, 1500)
-        self.satnogs_quad_demod_filter_ff_0 = satnogs.quad_demod_filter_ff(((audio_samp_rate/10) / baud_rate)/(math.pi*1))
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(16768, iq_file_path, False, enable_iq_dump)
         self.satnogs_frame_file_sink_0_1_0 = satnogs.frame_file_sink(decoded_data_file_path, 0)
@@ -102,10 +102,15 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff((48e3/10)/baud_rate, 0.25*0.175*0.175, 0.5, 0.175, 0.005)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.dc_blocker_xx_0 = filter.dc_blocker_ff(1024, True)
+        self.blocks_vco_c_0 = blocks.vco_c(audio_samp_rate, -audio_samp_rate, 1.0)
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)))
+        self.blocks_multiply_xx_0_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
+        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096, 1)
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, 1024/2)
         self.analog_sig_source_x_0 = analog.sig_source_c(audio_samp_rate, analog.GR_COS_WAVE, -(1200 + 2200) / 2, 1, 0)
+        self.analog_quadrature_demod_cf_0_0_0_0 = analog.quadrature_demod_cf(1.0)
         self.analog_quadrature_demod_cf_0_0 = analog.quadrature_demod_cf((2*math.pi*deviation)/audio_samp_rate)
         self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf(((audio_samp_rate/10) / baud_rate)/(math.pi*1))
 
@@ -122,22 +127,27 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.connect((self.analog_quadrature_demod_cf_0, 0), (self.digital_clock_recovery_mm_xx_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.dc_blocker_xx_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.satnogs_ogg_encoder_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0_0_0_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 1))
+        self.connect((self.blocks_delay_0, 0), (self.blocks_multiply_xx_0_0, 0))
         self.connect((self.blocks_float_to_complex_0, 0), (self.blocks_multiply_xx_0, 0))
+        self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_vco_c_0, 0))
         self.connect((self.blocks_multiply_xx_0, 0), (self.low_pass_filter_1, 0))
+        self.connect((self.blocks_multiply_xx_0_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.blocks_rotator_cc_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
+        self.connect((self.blocks_vco_c_0, 0), (self.blocks_multiply_xx_0_0, 1))
         self.connect((self.dc_blocker_xx_0, 0), (self.blocks_float_to_complex_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0_0, 0))
-        self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.satnogs_quad_demod_filter_ff_0, 0))
+        self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
         self.connect((self.low_pass_filter_1, 0), (self.analog_quadrature_demod_cf_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_rotator_cc_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.analog_quadrature_demod_cf_0_0_0_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_iq_sink_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
-        self.connect((self.satnogs_quad_demod_filter_ff_0, 0), (self.digital_binary_slicer_fb_0, 0))
 
     def get_antenna(self):
         return self.antenna
