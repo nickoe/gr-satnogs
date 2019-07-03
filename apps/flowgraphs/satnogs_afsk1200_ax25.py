@@ -106,7 +106,7 @@ class satnogs_afsk1200_ax25(gr.top_block):
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)))
         self.blocks_multiply_xx_0_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
-        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096, 1)
+        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096)
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, 1024/2)
         self.analog_sig_source_x_0 = analog.sig_source_c(audio_samp_rate, analog.GR_COS_WAVE, -(1200 + 2200) / 2, 1, 0)

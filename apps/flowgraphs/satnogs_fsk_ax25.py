@@ -105,7 +105,7 @@ class satnogs_fsk_ax25(gr.top_block):
         self.blocks_vco_c_0 = blocks.vco_c(audio_samp_rate, -audio_samp_rate, 1.0)
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)))
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
-        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096, 1)
+        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, 1024/2)
         self.analog_quadrature_demod_cf_0_0_0_0 = analog.quadrature_demod_cf(1.0)
         self.analog_quadrature_demod_cf_0_0_0 = analog.quadrature_demod_cf(0.9)
