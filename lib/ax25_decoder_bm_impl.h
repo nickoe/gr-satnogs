@@ -24,6 +24,7 @@
 
 #include <satnogs/ax25_decoder_bm.h>
 #include <gnuradio/digital/lfsr.h>
+#include <deque>
 
 namespace gr
 {
@@ -35,7 +36,7 @@ namespace gr
     private:
       typedef enum
       {
-        NO_SYNC, IN_SYNC, DECODING, FRAME_END
+        NO_SYNC, IN_SYNC, DECODING
       } decoding_state_t;
 
       /**
@@ -53,6 +54,8 @@ namespace gr
       size_t d_decoded_bits;
       digital::lfsr d_lfsr;
       uint8_t *d_frame_buffer;
+      std::deque<uint8_t> d_bitstream;
+      size_t d_start_idx;
 
       void
       reset_state ();
@@ -60,18 +63,16 @@ namespace gr
       enter_sync_state ();
       void
       enter_decoding_state ();
-      void
+      bool
       enter_frame_end ();
 
-      size_t
-      descramble_and_decode (const uint8_t *in, size_t nitems);
-      size_t
-      decode (const uint8_t *in, size_t nitems);
+      void
+      decode ();
 
       inline void
-      descramble_and_decode_1b (uint8_t in);
-      inline void
       decode_1b (uint8_t in);
+      bool
+      frame_check();
 
 
     public:

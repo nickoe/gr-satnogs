@@ -197,7 +197,10 @@ namespace gr
       out[i++] = fcs & 0xFF;
       out[i++] = (fcs >> 8) & 0xFF;
       memset (out + i, AX25_SYNC_FLAG, postamble_len);
-
+      for(size_t j = preamble_len; j < i; j++) {
+        printf("0x%02x ", out[j]);
+      }
+      printf("\n");
       return i + postamble_len;
     }
 
