@@ -136,7 +136,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1214, 419)</value>
+      <value>(1544, 420)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -410,7 +410,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1292, 203)</value>
+      <value>(1360, 228)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -665,7 +665,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1430, 411)</value>
+      <value>(1912, 412)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -861,7 +861,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1512, 592)</value>
+      <value>(1520, 592)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -900,19 +900,19 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1611, 386)</value>
+      <value>(1704, 556)</value>
     </param>
     <param>
       <key>_rotation</key>
-      <value>0</value>
+      <value>180</value>
     </param>
     <param>
       <key>gain_mu</key>
-      <value>0.175</value>
+      <value>0.5/8.0</value>
     </param>
     <param>
       <key>gain_omega</key>
-      <value>0.25*0.175*0.175</value>
+      <value>2 * math.pi / 100</value>
     </param>
     <param>
       <key>id</key>
@@ -932,7 +932,7 @@
     </param>
     <param>
       <key>omega_relative_limit</key>
-      <value>0.005</value>
+      <value>0.01</value>
     </param>
     <param>
       <key>omega</key>
@@ -1269,7 +1269,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>comment</key>
-      <value></value>
+      <value>Avoid aliasing of the polyphase resampler</value>
     </param>
     <param>
       <key>affinity</key>
@@ -1277,7 +1277,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>cutoff_freq</key>
-      <value>baudrate / 2 + 1500</value>
+      <value>0.75 * baudrate</value>
     </param>
     <param>
       <key>decim</key>
@@ -1285,7 +1285,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>type</key>
@@ -1293,7 +1293,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1022, 371)</value>
+      <value>(768, 372)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1321,11 +1321,86 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>samp_rate</key>
-      <value>2.0 * baudrate</value>
+      <value>audio_samp_rate</value>
     </param>
     <param>
       <key>width</key>
       <value>1000</value>
+    </param>
+    <param>
+      <key>win</key>
+      <value>firdes.WIN_HAMMING</value>
+    </param>
+  </block>
+  <block>
+    <key>low_pass_filter</key>
+    <param>
+      <key>beta</key>
+      <value>6.76</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>cutoff_freq</key>
+      <value>baudrate * 0.60</value>
+    </param>
+    <param>
+      <key>decim</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>fir_filter_fff</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1712, 372)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>gain</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>low_pass_filter_1</value>
+    </param>
+    <param>
+      <key>interp</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>samp_rate</key>
+      <value>2 * baudrate</value>
+    </param>
+    <param>
+      <key>width</key>
+      <value>baudrate / 8.0</value>
     </param>
     <param>
       <key>win</key>
@@ -2822,7 +2897,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(735, 395)</value>
+      <value>(1288, 396)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3379,7 +3454,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(965, 59)</value>
+      <value>(1008, 60)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3741,7 +3816,7 @@ we shift the LO a little further</value>
   </block>
   <connection>
     <source_block_id>analog_quadrature_demod_cf_0_0</source_block_id>
-    <sink_block_id>dc_blocker_xx_0</sink_block_id>
+    <sink_block_id>low_pass_filter_1</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -3771,7 +3846,7 @@ we shift the LO a little further</value>
   </connection>
   <connection>
     <source_block_id>blocks_multiply_xx_0</source_block_id>
-    <sink_block_id>pfb_arb_resampler_xxx_0_0_0</sink_block_id>
+    <sink_block_id>low_pass_filter_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -3819,7 +3894,13 @@ we shift the LO a little further</value>
   </connection>
   <connection>
     <source_block_id>low_pass_filter_0</source_block_id>
-    <sink_block_id>analog_quadrature_demod_cf_0_0</sink_block_id>
+    <sink_block_id>pfb_arb_resampler_xxx_0_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>low_pass_filter_1</source_block_id>
+    <sink_block_id>dc_blocker_xx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -3861,7 +3942,7 @@ we shift the LO a little further</value>
   </connection>
   <connection>
     <source_block_id>pfb_arb_resampler_xxx_0_0_0</source_block_id>
-    <sink_block_id>low_pass_filter_0</sink_block_id>
+    <sink_block_id>analog_quadrature_demod_cf_0_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>

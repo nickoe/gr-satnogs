@@ -96,9 +96,11 @@ class satnogs_msk_ax25(gr.top_block):
         self.osmosdr_source_0.set_antenna(satnogs.handle_rx_antenna(rx_sdr_device, antenna), 0)
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx), 0)
 
+        self.low_pass_filter_1 = filter.fir_filter_fff(1, firdes.low_pass(
+        	1, 2 * baudrate, baudrate * 0.60, baudrate / 8.0, firdes.WIN_HAMMING, 6.76))
         self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
-        	1, 2.0 * baudrate, baudrate / 2 + 1500, 1000, firdes.WIN_HAMMING, 6.76))
-        self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff(2, 0.25*0.175*0.175, 0.5, 0.175, 0.005)
+        	1, audio_samp_rate, 0.75 * baudrate, 1000, firdes.WIN_HAMMING, 6.76))
+        self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff(2, 2 * math.pi / 100, 0.5, 0.5/8.0, 0.01)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
         self.dc_blocker_xx_0_0 = filter.dc_blocker_ff(1024, True)
         self.dc_blocker_xx_0 = filter.dc_blocker_ff(1024, True)
@@ -121,12 +123,12 @@ class satnogs_msk_ax25(gr.top_block):
         self.msg_connect((self.satnogs_ax25_decoder_bm_0_0, 'pdu'), (self.satnogs_frame_file_sink_0_1_0, 'frame'))
         self.msg_connect((self.satnogs_ax25_decoder_bm_0_0, 'pdu'), (self.satnogs_udp_msg_sink_0_0, 'in'))
         self.msg_connect((self.satnogs_tcp_rigctl_msg_source_0, 'freq'), (self.satnogs_coarse_doppler_correction_cc_0, 'freq'))
-        self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.dc_blocker_xx_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.low_pass_filter_1, 0))
         self.connect((self.analog_quadrature_demod_cf_0_0_0, 0), (self.dc_blocker_xx_0_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0_0_0_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_vco_c_0, 0))
-        self.connect((self.blocks_multiply_xx_0, 0), (self.pfb_arb_resampler_xxx_0_0_0, 0))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.blocks_rotator_cc_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
         self.connect((self.blocks_vco_c_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.dc_blocker_xx_0, 0), (self.digital_clock_recovery_mm_xx_0, 0))
@@ -134,14 +136,15 @@ class satnogs_msk_ax25(gr.top_block):
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_ax25_decoder_bm_0_0, 0))
         self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
-        self.connect((self.low_pass_filter_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.pfb_arb_resampler_xxx_0_0_0, 0))
+        self.connect((self.low_pass_filter_1, 0), (self.dc_blocker_xx_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_rotator_cc_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.analog_quadrature_demod_cf_0_0_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.analog_quadrature_demod_cf_0_0_0_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_iq_sink_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0_0_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
 
     def get_antenna(self):
@@ -157,7 +160,8 @@ class satnogs_msk_ax25(gr.top_block):
     def set_baudrate(self, baudrate):
         self.baudrate = baudrate
         self.pfb_arb_resampler_xxx_0_0_0.set_rate((2.0*self.baudrate)/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, 2.0 * self.baudrate, self.baudrate / 2 + 1500, 1000, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(1, 2 * self.baudrate, self.baudrate * 0.60, self.baudrate / 8.0, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, 0.75 * self.baudrate, 1000, firdes.WIN_HAMMING, 6.76))
 
     def get_bb_gain(self):
         return self.bb_gain
@@ -295,6 +299,7 @@ class satnogs_msk_ax25(gr.top_block):
     def set_audio_samp_rate(self, audio_samp_rate):
         self.audio_samp_rate = audio_samp_rate
         self.pfb_arb_resampler_xxx_0.set_rate(self.audio_samp_rate/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, 0.75 * self.baudrate, 1000, firdes.WIN_HAMMING, 6.76))
 
 
 def argument_parser():
