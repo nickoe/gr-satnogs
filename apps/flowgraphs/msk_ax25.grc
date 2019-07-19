@@ -2921,7 +2921,7 @@ we shift the LO a little further</value>
     </param>
     <param>
       <key>rrate</key>
-      <value>(2.0*baudrate)/satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)</value>
+      <value>(2.0*baudrate)/audio_samp_rate</value>
     </param>
     <param>
       <key>samp_delay</key>
