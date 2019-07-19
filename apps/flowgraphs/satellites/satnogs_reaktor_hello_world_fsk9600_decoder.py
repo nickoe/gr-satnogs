@@ -5,8 +5,9 @@
 # Title: satnogs_reaktor_hello_world_fsk9600_decoder
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: FSK 9600 Decoder for the Reaktor-Hello-World satellite
-# Generated: Mon Dec  3 11:51:46 2018
+# GNU Radio version: 3.7.13.5
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -70,11 +71,11 @@ class satnogs_reaktor_hello_world_fsk9600_decoder(gr.top_block):
         self.satnogs_frame_file_sink_0_1_0 = satnogs.frame_file_sink(decoded_data_file_path, 0)
         self.satnogs_frame_acquisition_0 = satnogs.frame_acquisition(1, [0xAA, 0xAA, 0xAA, 0xAA], 4, [0x35, 0x2E, 0x35, 0x2E], 3, 1, 256, 3, variable_whitening_0, 2048)
         self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx))
-        self.pfb_arb_resampler_xxx_0_0 = pfb.arb_resampler_ccf(
+        self.pfb_arb_resampler_xxx_0_0_0 = pfb.arb_resampler_ccf(
         	  (2.0*baudrate)/audio_samp_rate,
                   taps=None,
         	  flt_size=32)
-        self.pfb_arb_resampler_xxx_0_0.declare_sample_delay(0)
+        self.pfb_arb_resampler_xxx_0_0_0.declare_sample_delay(0)
 
         self.pfb_arb_resampler_xxx_0 = pfb.arb_resampler_ccf(
         	  audio_samp_rate/satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx),
@@ -95,13 +96,22 @@ class satnogs_reaktor_hello_world_fsk9600_decoder(gr.top_block):
         self.osmosdr_source_0.set_antenna(satnogs.handle_rx_antenna(rx_sdr_device, antenna), 0)
         self.osmosdr_source_0.set_bandwidth(satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx), 0)
 
-        self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff(2, 0.25*0.175*0.175, 0.5, 0.175, 0.005)
+        self.low_pass_filter_1 = filter.fir_filter_fff(1, firdes.low_pass(
+        	1, 2 * baudrate, baudrate * 0.60, baudrate / 8.0, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
+        	1, audio_samp_rate, 0.75 * baudrate, 1000, firdes.WIN_HAMMING, 6.76))
+        self.digital_clock_recovery_mm_xx_0 = digital.clock_recovery_mm_ff(2, 2 * math.pi / 100, 0.5, 0.5/8.0, 0.01)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
+        self.dc_blocker_xx_0_0_0 = filter.dc_blocker_ff(1024, True)
         self.dc_blocker_xx_0_0 = filter.dc_blocker_ff(1024, True)
-        self.dc_blocker_xx_0 = filter.dc_blocker_ff(1024, True)
+        self.blocks_vco_c_0 = blocks.vco_c(audio_samp_rate, -audio_samp_rate, 1.0)
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)))
+        self.blocks_multiply_xx_0_0 = blocks.multiply_vcc(1)
+        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, 1024/2)
+        self.analog_quadrature_demod_cf_0_0_0_1 = analog.quadrature_demod_cf(1.2)
+        self.analog_quadrature_demod_cf_0_0_0_0 = analog.quadrature_demod_cf(1.0)
         self.analog_quadrature_demod_cf_0_0_0 = analog.quadrature_demod_cf(0.9)
-        self.analog_quadrature_demod_cf_0_0 = analog.quadrature_demod_cf(1.2)
 
 
 
@@ -111,19 +121,27 @@ class satnogs_reaktor_hello_world_fsk9600_decoder(gr.top_block):
         self.msg_connect((self.satnogs_frame_acquisition_0, 'out'), (self.satnogs_frame_file_sink_0_1_0, 'frame'))
         self.msg_connect((self.satnogs_frame_acquisition_0, 'out'), (self.satnogs_udp_msg_sink_0_0, 'in'))
         self.msg_connect((self.satnogs_tcp_rigctl_msg_source_0, 'freq'), (self.satnogs_coarse_doppler_correction_cc_0, 'freq'))
-        self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.dc_blocker_xx_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0_0_0, 0), (self.dc_blocker_xx_0_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0_0_0_0, 0), (self.blocks_moving_average_xx_0, 0))
+        self.connect((self.analog_quadrature_demod_cf_0_0_0_1, 0), (self.low_pass_filter_1, 0))
+        self.connect((self.blocks_delay_0, 0), (self.blocks_multiply_xx_0_0, 0))
+        self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_vco_c_0, 0))
+        self.connect((self.blocks_multiply_xx_0_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.blocks_rotator_cc_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
-        self.connect((self.dc_blocker_xx_0, 0), (self.digital_clock_recovery_mm_xx_0, 0))
+        self.connect((self.blocks_vco_c_0, 0), (self.blocks_multiply_xx_0_0, 1))
         self.connect((self.dc_blocker_xx_0_0, 0), (self.satnogs_ogg_encoder_0, 0))
+        self.connect((self.dc_blocker_xx_0_0_0, 0), (self.digital_clock_recovery_mm_xx_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.satnogs_frame_acquisition_0, 0))
         self.connect((self.digital_clock_recovery_mm_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.pfb_arb_resampler_xxx_0_0_0, 0))
+        self.connect((self.low_pass_filter_1, 0), (self.dc_blocker_xx_0_0_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_rotator_cc_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.analog_quadrature_demod_cf_0_0_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.pfb_arb_resampler_xxx_0_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.analog_quadrature_demod_cf_0_0_0_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_iq_sink_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.satnogs_waterfall_sink_0, 0))
-        self.connect((self.pfb_arb_resampler_xxx_0_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0_0_0, 0), (self.analog_quadrature_demod_cf_0_0_0_1, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
 
     def get_antenna(self):
@@ -138,7 +156,9 @@ class satnogs_reaktor_hello_world_fsk9600_decoder(gr.top_block):
 
     def set_baudrate(self, baudrate):
         self.baudrate = baudrate
-        self.pfb_arb_resampler_xxx_0_0.set_rate((2.0*self.baudrate)/self.audio_samp_rate)
+        self.pfb_arb_resampler_xxx_0_0_0.set_rate((2.0*self.baudrate)/self.audio_samp_rate)
+        self.low_pass_filter_1.set_taps(firdes.low_pass(1, 2 * self.baudrate, self.baudrate * 0.60, self.baudrate / 8.0, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, 0.75 * self.baudrate, 1000, firdes.WIN_HAMMING, 6.76))
 
     def get_bb_gain(self):
         return self.bb_gain
@@ -279,8 +299,9 @@ class satnogs_reaktor_hello_world_fsk9600_decoder(gr.top_block):
 
     def set_audio_samp_rate(self, audio_samp_rate):
         self.audio_samp_rate = audio_samp_rate
-        self.pfb_arb_resampler_xxx_0_0.set_rate((2.0*self.baudrate)/self.audio_samp_rate)
+        self.pfb_arb_resampler_xxx_0_0_0.set_rate((2.0*self.baudrate)/self.audio_samp_rate)
         self.pfb_arb_resampler_xxx_0.set_rate(self.audio_samp_rate/satnogs.handle_samp_rate_rx(self.rx_sdr_device, self.samp_rate_rx))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.audio_samp_rate, 0.75 * self.baudrate, 1000, firdes.WIN_HAMMING, 6.76))
 
 
 def argument_parser():
