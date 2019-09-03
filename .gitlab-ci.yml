@@ -3,7 +3,7 @@ stages:
   - deploy
 debian:
   stage: build
-  image: debian:stretch
+  image: debian:buster
   before_script:
     - apt-get update
     - apt-get install -y devscripts git-buildpackage
@@ -26,7 +26,7 @@ debian:
       - artifacts
 deploy:
   stage: deploy
-  image: debian:stretch
+  image: debian:buster
   before_script:
     - apt-get update
     - apt-get install -y osc
