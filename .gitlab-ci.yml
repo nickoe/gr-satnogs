@@ -62,6 +62,9 @@ deploy:
       cd "$BASE_DIR"
       rm -r "$OSC_WORKDIR"
   only:
+    refs:
+      - master
+      - tags
     variables:
       - $OBS_USER
       - $OBS_PASS
