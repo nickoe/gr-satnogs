@@ -16,6 +16,8 @@ debian:
           dch -b -M -v "${PACKAGE_VERSION}-1" "Bump to version '${PACKAGE_VERSION}-1'"
           dch -r -m ""
       }
+    - |
+      [ -n "CI_COMMIT_TAG" ] || sed -i '/0001-remove-git-maint-version.patch/ d' debian/patches/series
     - gbp buildpackage -us -uc --git-upstream-tag='HEAD' --git-ignore-branch --git-ignore-new
     - mkdir artifacts
     - cp -a ../*.{deb,debian.tar.xz,dsc,build,buildinfo,changes,orig.tar.gz} artifacts/
