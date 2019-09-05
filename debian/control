@@ -27,10 +27,23 @@ Vcs-Browser: https://gitlab.com/librespacefoundation/satnogs/gr-satnogs
 Package: gr-satnogs
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${python:Depends},
+Depends: libgnuradio-satnogs (= ${binary:Version}),
+         ${python:Depends},
          ${shlibs:Depends},
          ${misc:Depends}
 Recommends: gnuradio
 Description: SatNOGS GNU Radio Out-Of-Tree Module
  gr-satnogs is an out-of-tree GNU Radio module that provides all the necessary
  tools for decoding signals from various scientific and academic sattelites.
+
+Package: libgnuradio-satnogs
+Section: libs
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Multi-Arch: same
+Description: SatNOGS GNU Radio Out-Of-Tree Module
+ gr-satnogs is an out-of-tree GNU Radio module that provides all the necessary
+ tools for decoding signals from various scientific and academic sattelites.
+ .
+ This package contains the shared library.
