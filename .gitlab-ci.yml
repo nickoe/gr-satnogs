@@ -9,8 +9,12 @@ debian:
     - apt-get install -y devscripts git-buildpackage
   script:
     - mk-build-deps -i -r -t "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
-    - PACKAGE_VERSION="${CI_COMMIT_TAG#v}"
-    - PACKAGE_VERSION="${PACKAGE_VERSION:-$(git describe --abbrev=8 2>/dev/null | tr '-' '+' | cut -c '2-' || true)}"
+    - PACKAGE_VERSION="$CI_COMMIT_TAG"
+    # Workaround for GitLab CI bug (see https://gitlab.com/gitlab-org/gitlab-ce/issues/61007)
+    # On issue fix, replace with:
+    # - PACKAGE_VERSION="${PACKAGE_VERSION:-$(git describe --abbrev=8 2>/dev/null | tr '-' '+' | cut -c '2-' || true)}"
+    - PACKAGE_VERSION="${PACKAGE_VERSION:-0.0+1+g$CI_COMMIT_SHORT_SHA}"
+    - PACKAGE_VERSION="${PACKAGE_VERSION#v}"
     - |
       [ -z "$PACKAGE_VERSION" ] || {
           dch -b -M -v "${PACKAGE_VERSION}-1" "Bump to version '${PACKAGE_VERSION}-1'"
