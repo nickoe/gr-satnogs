@@ -5,10 +5,11 @@
 # Title: FM Generic Demodulation
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: A generic FM demodulation block
-# Generated: Sun Nov 19 11:35:00 2017
+# Generated: Tue Feb 12 23:54:49 2019
 ##################################################
 
 from gnuradio import analog
+from gnuradio import blocks
 from gnuradio import eng_notation
 from gnuradio import filter
 from gnuradio import gr
@@ -23,7 +24,7 @@ import time
 
 class satnogs_fm_demod(gr.top_block):
 
-    def __init__(self, antenna=satnogs.not_set_antenna, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=20, enable_iq_dump=0, file_path='test.ogg', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', waterfall_file_path='/tmp/waterfall.dat'):
+    def __init__(self, antenna=satnogs.not_set_antenna, bb_gain=satnogs.not_set_rx_bb_gain, decoded_data_file_path='/tmp/.satnogs/data/data', dev_args=satnogs.not_set_dev_args, doppler_correction_per_sec=20, enable_iq_dump=1, file_path='test.ogg', if_gain=satnogs.not_set_rx_if_gain, iq_file_path='/tmp/iq.dat', lo_offset=100e3, ppm=0, rf_gain=satnogs.not_set_rx_rf_gain, rigctl_port=4532, rx_freq=100e6, rx_sdr_device='usrpb200', waterfall_file_path='/tmp/waterfall.dat'):
         gr.top_block.__init__(self, "FM Generic Demodulation")
 
         ##################################################
@@ -65,6 +66,7 @@ class satnogs_fm_demod(gr.top_block):
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
         self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
+        self.satnogs_iq_sink_1 = satnogs.iq_sink(32767, '/tmp/iq_from_osmocom_source_direct_IQ_Sink.dat', False, 0)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(32767, iq_file_path, False, enable_iq_dump)
         self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx)
         self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + satnogs.handle_rx_dev_args(rx_sdr_device, dev_args) )
@@ -83,6 +85,8 @@ class satnogs_fm_demod(gr.top_block):
         self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
         	1, audio_samp_rate, deviation+max_modulation_freq, 3000, firdes.WIN_HAMMING, 6.76))
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(int(samp_rate_rx/filter_rate), (xlate_filter_taps), lo_offset, samp_rate_rx)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_gr_complex*1, '/tmp/iq_from_osmocom_source_direct_File_Sink.dat', False)
+        self.blocks_file_sink_0.set_unbuffered(False)
         self.blks2_rational_resampler_xxx_1 = filter.rational_resampler_ccc(
                 interpolation=24,
                 decimation=125,
@@ -90,6 +94,8 @@ class satnogs_fm_demod(gr.top_block):
                 fractional_bw=None,
         )
         self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf((2*math.pi*deviation)/audio_samp_rate)
+
+
 
         ##################################################
         # Connections
@@ -101,7 +107,9 @@ class satnogs_fm_demod(gr.top_block):
         self.connect((self.blks2_rational_resampler_xxx_1, 0), (self.satnogs_waterfall_sink_0, 0))
         self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.blks2_rational_resampler_xxx_1, 0))
         self.connect((self.low_pass_filter_0, 0), (self.analog_quadrature_demod_cf_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.satnogs_coarse_doppler_correction_cc_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.satnogs_iq_sink_1, 0))
         self.connect((self.satnogs_coarse_doppler_correction_cc_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
 
     def get_antenna(self):
@@ -285,7 +293,7 @@ def argument_parser():
         "", "--doppler-correction-per-sec", dest="doppler_correction_per_sec", type="intx", default=20,
         help="Set doppler_correction_per_sec [default=%default]")
     parser.add_option(
-        "", "--enable-iq-dump", dest="enable_iq_dump", type="intx", default=0,
+        "", "--enable-iq-dump", dest="enable_iq_dump", type="intx", default=1,
         help="Set enable_iq_dump [default=%default]")
     parser.add_option(
         "", "--file-path", dest="file_path", type="string", default='test.ogg',
