@@ -160,19 +160,19 @@ if(NOT FEC_FOUND)
                    "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
         INSTALL_COMMAND ""
     )
-    
+
     ExternalProject_Get_Property(FEC_EXTERNAL binary_dir)
     add_library(fec SHARED IMPORTED)
 
     set_property(TARGET fec PROPERTY IMPORTED_LOCATION ${install_dir}/libfec.so)
-    
+
     add_dependencies(fec FEC_EXTERNAL)
     set(FEC_LIBRARIES "${binary_dir}/libfec.so")
     set(FEC_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/libfec")
-    
+
     # Install the header and the library in the standard places
-    install(FILES 
-        "${FEC_INCLUDE_DIRS}/fec.h" 
+    install(FILES
+        "${FEC_INCLUDE_DIRS}/fec.h"
         DESTINATION "include"
     )
     install(FILES
@@ -188,7 +188,7 @@ endif()
 # caps such as FILTER or FFT) and change the version to the minimum
 # API compatible version required.
 set(GR_REQUIRED_COMPONENTS RUNTIME FFT FILTER DIGITAL BLOCKS)
-find_package(Gnuradio "3.7.7" REQUIRED)
+find_package(Gnuradio "3.8" REQUIRED)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 include(GrVersion)
 
