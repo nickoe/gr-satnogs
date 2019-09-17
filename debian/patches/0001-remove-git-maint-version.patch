@@ -1,11 +1,8 @@
-Index: gr-satnogs-1.5.1/CMakeLists.txt
+Index: gr-satnogs/CMakeLists.txt
 ===================================================================
---- gr-satnogs-1.5.1.orig/CMakeLists.txt
-+++ gr-satnogs-1.5.1/CMakeLists.txt
-@@ -49,7 +49,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_
- set(VERSION_INFO_MAJOR_VERSION 1)
- set(VERSION_INFO_API_COMPAT    5)
- set(VERSION_INFO_MINOR_VERSION 1)
+--- gr-satnogs.orig/CMakeLists.txt
++++ gr-satnogs/CMakeLists.txt
+@@ -52,4 +52,4 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_
 -set(VERSION_INFO_MAINT_VERSION git)
 +set(VERSION_INFO_MAINT_VERSION 0)
  
