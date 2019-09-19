@@ -1,9 +1,11 @@
+variables:
+  GITLAB_CI_IMAGE_DEBIAN: 'debian:buster'
 stages:
   - build
   - deploy
 debian:
   stage: build
-  image: debian:buster
+  image: ${GITLAB_CI_IMAGE_DEBIAN}
   before_script:
     - apt-get update
     - apt-get install -y devscripts git-buildpackage
@@ -32,7 +34,7 @@ debian:
       - artifacts
 deploy:
   stage: deploy
-  image: debian:buster
+  image: ${GITLAB_CI_IMAGE_DEBIAN}
   before_script:
     - apt-get update
     - apt-get install -y osc
