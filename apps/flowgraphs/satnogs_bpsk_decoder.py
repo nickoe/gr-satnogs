@@ -5,8 +5,9 @@
 # Title: BPSK Decoder
 # Author: Patrick Dohmen, DL4PD
 # Description: A BPSK decoder block for gr-satnogs
-# Generated: Tue Mar 27 17:05:17 2018
+# Generated: Wed Nov 20 17:41:42 2019
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -19,6 +20,7 @@ from gnuradio.filter import firdes
 from optparse import OptionParser
 import osmosdr
 import satnogs
+import time
 
 
 class satnogs_bpsk_decoder(gr.top_block):
@@ -72,7 +74,7 @@ class satnogs_bpsk_decoder(gr.top_block):
         ##################################################
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(max(12000, int(3*(1+alpha)*baudrate)), 0.0, 10, 1024, waterfall_file_path, 1)
         self.satnogs_udp_msg_sink_0_0 = satnogs.udp_msg_sink(udp_IP, udp_port, 1500)
-        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
+        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("172.28.1.2", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(32767, iq_file_path, False, enable_iq_dump)
         self.satnogs_frame_file_sink_0_1_0 = satnogs.frame_file_sink(decoded_data_file_path, 0)
@@ -120,6 +122,8 @@ class satnogs_bpsk_decoder(gr.top_block):
         self.analog_agc2_xx_0_0.set_max_gain(65536)
         self.analog_agc2_xx_0 = analog.agc2_cc(0.01, 0.001, 0.5, 1.0)
         self.analog_agc2_xx_0.set_max_gain(65536)
+
+
 
         ##################################################
         # Connections

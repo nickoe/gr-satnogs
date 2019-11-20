@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: FSK9600 AX.25 decoder 
+# Title: FSK9600 AX.25 decoder
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: FSK9600 AX.25 decoder
-# Generated: Sat Nov 24 21:42:51 2018
+# Generated: Wed Nov 20 17:41:49 2019
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import digital
@@ -68,7 +69,7 @@ class satnogs_fsk9600_ax25(gr.top_block):
         ##################################################
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
         self.satnogs_udp_msg_sink_0_0 = satnogs.udp_msg_sink(udp_IP, udp_port, 1500)
-        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000, 1500)
+        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("172.28.1.2", rigctl_port, False, 1000, 1500)
         self.satnogs_quad_demod_filter_ff_0 = satnogs.quad_demod_filter_ff(((audio_samp_rate) / baud_rate)/(math.pi*modulation_index))
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(16768, '/tmp/iq.bin', False, enable_iq_dump)
@@ -102,6 +103,8 @@ class satnogs_fsk9600_ax25(gr.top_block):
                 fractional_bw=None,
         )
         self.analog_quadrature_demod_cf_0_0 = analog.quadrature_demod_cf(((audio_samp_rate) / baud_rate)/(math.pi*modulation_index))
+
+
 
         ##################################################
         # Connections

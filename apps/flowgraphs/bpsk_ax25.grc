@@ -3624,7 +3624,7 @@ reception performance.</value>
     </param>
     <param>
       <key>addr</key>
-      <value>"127.0.0.1"</value>
+      <value>"172.28.1.2"</value>
     </param>
     <param>
       <key>mtu</key>

@@ -5,7 +5,7 @@
 # Title: satnogs_msk_ax25
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: Generic MSK AX.25 decoder
-# GNU Radio version: 3.7.13.5
+# Generated: Wed Nov 20 17:41:23 2019
 ##################################################
 
 
@@ -64,7 +64,7 @@ class satnogs_msk_ax25(gr.top_block):
         ##################################################
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
         self.satnogs_udp_msg_sink_0_0 = satnogs.udp_msg_sink(udp_IP, udp_port, 1500)
-        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000, 1500)
+        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("172.28.1.2", rigctl_port, False, 1000, 1500)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(16768, iq_file_path, False, enable_iq_dump)
         self.satnogs_frame_file_sink_0_1_0 = satnogs.frame_file_sink(decoded_data_file_path, 0)
@@ -107,7 +107,7 @@ class satnogs_msk_ax25(gr.top_block):
         self.blocks_vco_c_0 = blocks.vco_c(audio_samp_rate, -audio_samp_rate, 1.0)
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2.0 * math.pi * (lo_offset / satnogs.handle_samp_rate_rx(rx_sdr_device, samp_rate_rx)))
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
-        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096)
+        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(1024, 1.0/1024.0, 4096, 1)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, 1024/2)
         self.analog_quadrature_demod_cf_0_0_0_0 = analog.quadrature_demod_cf(1.0)
         self.analog_quadrature_demod_cf_0_0_0 = analog.quadrature_demod_cf(0.9)

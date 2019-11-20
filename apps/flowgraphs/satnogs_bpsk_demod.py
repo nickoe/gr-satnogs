@@ -5,8 +5,9 @@
 # Title: BPSK Generic Demodulation
 # Author: surligas, cshields, csete
 # Description: A generic BPSK demodulation block
-# Generated: Sun Nov 19 11:35:26 2017
+# Generated: Wed Nov 20 17:41:44 2019
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -63,7 +64,7 @@ class satnogs_bpsk_demod(gr.top_block):
         # Blocks
         ##################################################
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
-        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
+        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("172.28.1.2", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(32767, iq_file_path, False, enable_iq_dump)
         self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx)
@@ -94,6 +95,8 @@ class satnogs_bpsk_demod(gr.top_block):
         self.analog_sig_source_x_0 = analog.sig_source_c(audio_samp_rate, analog.GR_COS_WAVE, cw_offset, 1, 0)
         self.analog_agc2_xx_0_0 = analog.agc2_cc(0.01, 0.001, 0.015, 0.0)
         self.analog_agc2_xx_0_0.set_max_gain(65536)
+
+
 
         ##################################################
         # Connections

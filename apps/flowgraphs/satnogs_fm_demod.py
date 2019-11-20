@@ -5,8 +5,9 @@
 # Title: FM Generic Demodulation
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: A generic FM demodulation block
-# Generated: Sun Nov 19 11:35:00 2017
+# Generated: Wed Nov 20 17:41:48 2019
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import eng_notation
@@ -63,7 +64,7 @@ class satnogs_fm_demod(gr.top_block):
         # Blocks
         ##################################################
         self.satnogs_waterfall_sink_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
-        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
+        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("172.28.1.2", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
         self.satnogs_iq_sink_0 = satnogs.iq_sink(32767, iq_file_path, False, enable_iq_dump)
         self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx)
@@ -90,6 +91,8 @@ class satnogs_fm_demod(gr.top_block):
                 fractional_bw=None,
         )
         self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf((2*math.pi*deviation)/audio_samp_rate)
+
+
 
         ##################################################
         # Connections

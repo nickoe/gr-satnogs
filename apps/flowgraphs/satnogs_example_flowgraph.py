@@ -5,8 +5,9 @@
 # Title: An example flowgraph
 # Author: Manolis Surligas (surligas@gmail.com)
 # Description: An example flowgraph that can be used as a base for decoding flowgraphs
-# Generated: Fri Apr 27 11:31:43 2018
+# Generated: Wed Nov 20 17:41:47 2019
 ##################################################
+
 
 from gnuradio import analog
 from gnuradio import eng_notation
@@ -63,7 +64,7 @@ class satnogs_example_flowgraph(gr.top_block):
         # Blocks
         ##################################################
         self.satnogs_waterfall_sink_0_0 = satnogs.waterfall_sink(audio_samp_rate, 0.0, 10, 1024, waterfall_file_path, 1)
-        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("127.0.0.1", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
+        self.satnogs_tcp_rigctl_msg_source_0 = satnogs.tcp_rigctl_msg_source("172.28.1.2", rigctl_port, False, 1000/doppler_correction_per_sec, 1500)
         self.satnogs_ogg_encoder_0 = satnogs.ogg_encoder(file_path, audio_samp_rate, 1.0)
         self.satnogs_iq_sink_0_0 = satnogs.iq_sink(16768, iq_file_path, False, enable_iq_dump)
         self.satnogs_coarse_doppler_correction_cc_0 = satnogs.coarse_doppler_correction_cc(rx_freq, samp_rate_rx)
