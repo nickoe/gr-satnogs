@@ -60,5 +60,5 @@ if(${INCLUDE_DEBUG_BLOCKS})
 endif()
 install(FILES
     ${enabled_blocks}
-    DESTINATION share/gnuradio/grc/blocks
+    satnogs_u8vector_to_pmt_blobby.xml DESTINATION share/gnuradio/grc/blocks
 )

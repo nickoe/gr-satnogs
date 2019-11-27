@@ -38,7 +38,7 @@ GR_PYTHON_INSTALL(
     hw_settings.py
     utils.py
     ${CMAKE_BINARY_DIR}/satnogs_info.py
-    DESTINATION ${GR_PYTHON_DIR}/satnogs
+    u8vector_to_pmt_blobby.py DESTINATION ${GR_PYTHON_DIR}/satnogs
 )
 
 ########################################################################

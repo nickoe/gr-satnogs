@@ -35,3 +35,4 @@ except ImportError as err:
     sys.stderr.write("Consider first to run 'sudo ldconfig'\n")
     pass
 
+from u8vector_to_pmt_blobby import u8vector_to_pmt_blobby
